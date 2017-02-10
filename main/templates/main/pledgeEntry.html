@@ -1,0 +1,89 @@
+{% extends 'main/index.html' %}
+{% block title %}Pledge Entry{% endblock %}
+{% block content %}
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-sm-6">
+
+  			<h1>Pledge Entry</h1>
+        <div id="pledgeFormContent">{% include 'main/pledgeEntryForm.html' %}
+
+      </div>
+    </div>
+    <div class="col-sm-6">
+
+      <h2>Recent Entries</h2>
+      <a href="#" id="addRandom">Add Random</a> | <a href="#" id="deleteAll">Delete All</a>
+
+      <ul id="recenEntries" class="list-group">
+        {% for entry in entries %}
+        <li class="list-group-item">{{ entry }}</li>
+        {% endfor%}
+      </ul>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+$(document).ready(function() {
+
+  // BEGIN Redent Entries Handler
+
+  $("#addRandom").click(function(eventObject) {
+    var textNames = [
+      'Alpha','Bravo','Charlie','Delta','Echo','Foxtrot','Golf','Hotel','India','Juliet','Kilo','Lima',
+      'Mike','November','Oscar','Papa','Quebec','Romeo','Sieerra','Tango','Uniform','Victor','Whiskey',
+      'X-Ray','Yankee','Zulu'
+    ];
+    eventObject.preventDefault();
+    var name = textNames[Math.floor(Math.random()*textNames.length)] + ' ' +
+      textNames[Math.floor(Math.random()*textNames.length)];
+      addEntry(name);
+  });
+
+	
+	function addEntry(strEntry){
+    $("#recenEntries").prepend('<li class="list-group-item">'+strEntry+'</li>');
+  };
+
+
+
+  $("#deleteAll").click(function(eventObject) {
+    eventObject.preventDefault();
+    $("#recenEntries li").remove();
+
+  });
+  // END Recent Entries handler
+
+
+  // BEGIN pledgeEntry post
+  $("#cornerstone").on('submit','#pageContent', function(eventObject) {
+    eventObject.preventDefault();
+
+    $.post( "/pledgeEntry/", $("#PledgeEntryForm").serialize() )
+      .done(function( data ) {
+        $('#pledgeFormContent').html(data);
+
+      })
+      .fail(function( data ) {
+        console.log("JQuery POST failed!  -- ");
+        console.log(data);
+      })
+
+
+  });
+  // End pledgeEntry post
+});
+</script>
+{% endblock %}
+
+{% block style %}
+<style>
+table, th, td {
+    border: 1px solid grey;
+}
+</style>
+{% endblock %}

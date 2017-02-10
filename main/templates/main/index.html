@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link href="/static/main/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- old values to update
+    <link rel="shortcut icon" type="image/png" href="/static/home/favicon.ico">
+    -->
+    <title>Track-A-Thon{% block title %}{% endblock %}</title>
+  </head>
+  <body>
+    <!--  NAV  -->
+    <div class="panel panel-info">
+      <div class="panel-heading" style="font-weight: bold;">
+          <h4 class="panel-title">
+            <ul class="nav nav-pills">
+              <li id="nav_main" role="navigation"><a href="/">Dashboard</a></li>
+              <li id="nav_pledgeEntry" role="navigation"><a href="/pledgeEntry/">Pledge Entry</a></li>
+            </ul>
+          </h4>
+      </div>
+    </div>
+    <!--  END NAV  -->
+
+    <!-- Main container -->
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12">
+          <div id="cornerstone"> <!-- JQuery bind point -->
+            <div id="pageContent"> <!-- JQuery target -->
+              {% block content %}
+              {% endblock %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom script stuff -->
+    {% block style %}{% endblock %}
+
+    <script src="/static/main/js/jquery1.12.4.min.js"></script>
+    <script src="/static/main/js/bootstrap.min.js"></script>
+    <script>
+
+      $(document).ready(function(){
+
+        // Begin NAV handling
+        // http://stackoverflow.com/questions/11533542/twitter-bootstrap-add-active-class-to-li
+        var url = window.location;
+        // Will only work if string in href matches with location
+        $('ul.nav a[href="'+ url +'"]').parent().addClass('active');
+
+        // Will also work for relative and absolute hrefs
+        $('ul.nav a').filter(function() {
+            return this.href == url;
+        }).parent().addClass('active');
+        // End NAV handling
+      });
+
+      </script>
+    {% block javascript %}{% endblock %}
+  </body>
+</html>

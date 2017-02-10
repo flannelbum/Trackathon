@@ -1,0 +1,14 @@
+<form action="/pledgeEntry/" method="POST" id="PledgeEntryForm" novalidate="novalidate">
+	{% csrf_token %}
+	<div class="form-group">
+		<table>
+		{% for field in form %}
+			<tr>
+				<td align="right">{{ field.label_tag }}</td>
+				<td>{{ field }}<div id="error" class="alert-warning">{{ field.errors.as_text }}</div></td>
+			</tr>
+		{% endfor %}
+		</table>
+    <input type="submit" value="Submit" />
+  </div>
+</form>
