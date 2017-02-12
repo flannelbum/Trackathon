@@ -21,13 +21,35 @@
             <strong>Has Been Thanked:</strong> {{entry.beenthanked}}<br/>
             <strong>Station:</strong> {{entry.callsign}}<br/>
             <strong>Parish:</strong> {{entry.parish}}<br/>
-            <strong>Group Call-out:</strong> {{entry.parish}}<br/>
+            <strong>Group Call-out:</strong> {{entry.groupcallout}}<br/>
             <strong>Comment:</strong> {{entry.comment}}
           </p>
         </div>
       </div>
     </div>
     {% endfor %}
+    <!-- https://simpleisbetterthancomplex.com/tutorial/2016/08/03/how-to-paginate-with-django.html -->
+    {% if entries.has_other_pages %}
+    <ul class="pagination">
+      {% if entries.has_previous %}
+        <li><a href="?page={{ entries.previous_page_number }}">&laquo;</a></li>
+      {% else %}
+        <li class="disabled"><span>&laquo;</span></li>
+      {% endif %}
+      {% for i in entries.paginator.page_range %}
+        {% if entries.number == i %}
+          <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+        {% else %}
+          <li><a href="?page={{ i }}">{{ i }}</a></li>
+        {% endif %}
+      {% endfor %}
+      {% if entries.has_next %}
+        <li><a href="?page={{ entries.next_page_number }}">&raquo;</a></li>
+      {% else %}
+        <li class="disabled"><span>&raquo;</span></li>
+      {% endif %}
+    </ul>
+  {% endif %}
   </div>
 </div> <!--END TEST -->
 

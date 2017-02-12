@@ -7,9 +7,26 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <link href="/static/main/css/bootstrap.min.css" rel="stylesheet" />
-    <!-- old values to update
-    <link rel="shortcut icon" type="image/png" href="/static/home/favicon.ico">
-    -->
+    <!-- <link rel="shortcut icon" type="image/png" href="/media/main/favicon.ico"> -->
+
+    <link rel="apple-touch-icon" sizes="57x57" href="/static/main/favicon/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/static/main/favicon/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/static/main/favicon/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/static/main/favicon/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/static/main/favicon/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/static/main/favicon/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/static/main/favicon/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/static/main/favicon/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/main/favicon/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/static/main/favicon/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/main/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/static/main/favicon/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/main/favicon/favicon-16x16.png">
+    <link rel="manifest" href="/static/main/favicon/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/static/main/favicon/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+
     <title>{% block title %}Track-A-Thon{% endblock %}</title>
   </head>
   <body>
@@ -74,7 +91,7 @@
         // http://stackoverflow.com/questions/11533542/twitter-bootstrap-add-active-class-to-li
         var url = window.location;
         // Will only work if string in href matches with location
-        $('ul.nav a[href="'+ url +'"]').parent().addClass('active');
+        $('ul.nav a[href="'+ url.pathname +'"]').parent().addClass('active');
 
         // Will also work for relative and absolute hrefs
         $('ul.nav a').filter(function() {
