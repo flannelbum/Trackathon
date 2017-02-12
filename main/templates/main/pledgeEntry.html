@@ -13,14 +13,9 @@
     <div class="col-sm-6">
 
       <h2>Recent Entries</h2>
-      <a href="#" id="addRandom">Add Random</a> | <a href="#" id="deleteAll">Delete All</a>
-
-      <ul id="recenEntries" class="list-group">
-        {% for entry in entries %}
-        <li class="list-group-item">{{ entry }}</li>
-        {% endfor%}
-      </ul>
-
+      <a href="#" id="addRandom">Add Random list entry</a>
+			<div id="re_jquerytarget">
+			</div>
     </div>
   </div>
 </div>
@@ -30,7 +25,7 @@
 <script type="text/javascript">
 $(document).ready(function() {
 
-  // BEGIN Redent Entries Handler
+  // BEGIN Recent Entries Handler
 
   $("#addRandom").click(function(eventObject) {
     var textNames = [
@@ -44,28 +39,34 @@ $(document).ready(function() {
       addEntry(name);
   });
 
-	
+
 	function addEntry(strEntry){
     $("#recenEntries").prepend('<li class="list-group-item">'+strEntry+'</li>');
   };
 
 
-
-  $("#deleteAll").click(function(eventObject) {
-    eventObject.preventDefault();
-    $("#recenEntries li").remove();
-
-  });
   // END Recent Entries handler
 
+	// Resituation the recentEntries (hack)
+	$("#re_jquerytarget").html( $("#recenEntries").html() );
+	$("#recenEntries").remove();
+	// END recentEntries resituation
 
   // BEGIN pledgeEntry post
-  $("#cornerstone").on('submit','#pageContent', function(eventObject) {
+  $("#cornerstone_no").on('submit','#pageContent', function(eventObject) {
     eventObject.preventDefault();
 
     $.post( "/pledgeEntry/", $("#PledgeEntryForm").serialize() )
       .done(function( data ) {
-        $('#pledgeFormContent').html(data);
+					var data2 = $(data).html();
+					var find = $(data2).find(".div").hasClass("form-group");
+					console.log(find);
+					// var pform = $("#PledgeEntryForm", $(data)).val();
+					var pform = $(data).find("#PledgeEntryForm").val();
+					var rentries = $("#recenEntries", $(data)).val();
+
+        	$('#pledgeFormContent').html(pform);
+					$('#recenEntries').html(rentries);
 
       })
       .fail(function( data ) {
@@ -84,6 +85,15 @@ $(document).ready(function() {
 <style>
 table, th, td {
     border: 1px solid grey;
+}
+
+.list-group-item {
+    position: relative;
+    display: block;
+    padding: 10px 15px;
+    margin-bottom: -1px;
+    background-color: #d9edf7;
+    border: 1px solid #337ab7;
 }
 </style>
 {% endblock %}

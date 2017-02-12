@@ -7,15 +7,15 @@ from main.models import PledgeEntry
 
 
 def index(request):
-    return render(request,'main/index.html')
+    template_name='main/dashboard.html'
+    entries = PledgeEntry.objects.order_by('-id')[:10][::-1]
+    context = { 'entries': reversed(entries) }
+    return render(request,template_name,context)
 
 
 def pledgeEntry(request):
     template_name='main/pledgeEntry.html'
     entries = PledgeEntry.objects.order_by('-id')[:10][::-1]
-
-    if request.method=="POST":
-        template_name='main/pledgeEntryForm.html'
 
     form = PledgeEntryForm(request.POST or None)
 
@@ -35,6 +35,8 @@ def pledgeEntry(request):
             comment = form.cleaned_data['comment'],
         )
         entry.save()
+        form = PledgeEntryForm(None)
+        entries = PledgeEntry.objects.order_by('-id')[:10][::-1]
 
     return render(
         request,

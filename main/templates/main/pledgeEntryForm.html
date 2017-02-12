@@ -12,3 +12,8 @@
     <input type="submit" value="Submit" />
   </div>
 </form>
+<ul id="recenEntries" class="list-group">
+	{% for entry in entries %}
+	<li class="list-group-item">{{ entry }}</li>
+	{% endfor%}
+</ul>
