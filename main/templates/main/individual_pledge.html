@@ -1,0 +1,37 @@
+<div class="panel panel-default">
+  <!-- {{ entry.id }} -->
+
+  {% if entry.singleormonthly == 'monthly' %}
+  <div class="hoverclick panel-heading monthly" data-toggle="collapse" data-parent="#accordion" data-target="#{{ entry.id }}">
+  {% else %}
+  <div class="hoverclick panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#{{ entry.id }}">
+  {% endif%}
+  
+    <h4 class="panel-title">
+      <div >
+        {% if entry.beenthanked == False %}
+        <span class="glyphicon glyphicon-alert"></span>
+        {% endif %}
+        {% if entry.ftdonor == True %}
+      
+        <span class="glyphicon glyphicon-heart"></span>
+        {% endif %}
+        
+        ${{ entry.amount }} - {{ entry.firstname }} {{ entry.lastname }} - {{ entry.city }} - {{ entry.callsign }}
+      </div>
+    </h4>
+  </div>
+  <div id="{{ entry.id}}" class="panel-collapse collapse">
+    <div class="panel-body">
+      <p>
+        <strong>Created:</strong> {{ entry.create_date }} <strong>SystemID:</strong> {{ entry.id }}<br/>
+        <strong>First Time Donor:</strong> {{ entry.ftdonor }} <br/>
+        <strong>Has Been Thanked:</strong> {{ entry.beenthanked }}<br/>
+        <strong>Station:</strong> {{ entry.callsign }}<br/>
+        <strong>Parish:</strong> {{ entry.parish }}<br/>
+        <strong>Group Call-out:</strong> {{ entry.groupcallout }}<br/>
+        <strong>Comment:</strong> {{ entry.comment }}
+      </p>
+    </div>
+  </div>
+</div>

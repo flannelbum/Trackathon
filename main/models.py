@@ -23,7 +23,7 @@ class PledgeEntry(models.Model):
         ('single','Single'),
         ('monthly','Monthly'),
     )
-    amount = models.DecimalField(max_digits=8,decimal_places=2)
+    amount = models.DecimalField(max_digits=9,decimal_places=2)
     ftdonor = models.BooleanField(choices=BOOL_CHOICES,default=False )
     beenthanked = models.BooleanField(choices=BOOL_CHOICES,default=False )
     create_date = models.DateTimeField(auto_now_add=True)

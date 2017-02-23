@@ -1,0 +1,55 @@
+
+<script src="http://www.chartjs.org/assets/Chart.min.js"></script>
+<script src="/static/main/js/Chart.HorizontalBar.js"></script>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-12">
+      <canvas id="canvas"></canvas>
+    </div>
+  </div>
+</div>
+
+
+<script>
+
+
+
+var randomScalingFactor = function(){
+  return Math.round(Math.random()*100);
+};
+
+var barChartData = {
+  labels : ["WNOC", "WHRQ","WFOT","WSHB","WRRO","WLBJ"],
+  datasets : [
+    {
+
+      fillColor : "rgba(151,187,205,0.5)",
+      strokeColor : "rgba(151,187,205,0.8)",
+      highlightFill : "rgba(151,187,205,0.75)",
+      highlightStroke : "rgba(151,187,205,1)",
+      data : [randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor()]
+    },
+    {
+    	fillColor : "rgba(120,120,220,0.5)",
+    	strokeColor : "rgba(220,220,220,0.8)",
+    	highlightFill: "rgba(220,220,220,0.75)",
+    	highlightStroke: "rgba(220,220,220,1)",
+    	data : [randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor()]
+    }
+  ],
+  options: [
+    {
+      barThickness: 15,
+    }
+  ]
+};
+
+
+var ctx2 = document.getElementById("canvas").getContext("2d");
+var chart = new Chart(ctx2).HorizontalBar(barChartData, {
+  responsive: true,
+  barShowStroke: false
+});
+
+
+</script>

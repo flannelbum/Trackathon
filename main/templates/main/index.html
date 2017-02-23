@@ -7,8 +7,8 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <link href="/static/main/css/bootstrap.min.css" rel="stylesheet" />
-    <!-- <link rel="shortcut icon" type="image/png" href="/media/main/favicon.ico"> -->
 
+    <!-- http://www.favicon-generator.org/ -->
     <link rel="apple-touch-icon" sizes="57x57" href="/static/main/favicon/apple-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="/static/main/favicon/apple-icon-60x60.png">
     <link rel="apple-touch-icon" sizes="72x72" href="/static/main/favicon/apple-icon-72x72.png">
@@ -62,10 +62,9 @@
                 Tell <a href="mailto:flannelbum@gmail.com">flannelbum</a> about it!
               </p>
               {% endblock %}
-              {% load version %}
               <p>
                 All data is fake.  Site is in Alpha testing - it's missing features and functionality.
-              <br/>
+              <br/>{% load version %}
                 Email feedback to: <a href="mailto:flannelbum@gmail.com?Subject=Trackathon%20feedback%20ver{% version_date %}">flannelbum@gmail.com</a> - Project files on <a href="https://github.com/flannelbum/Trackathon" target="_new">GitHub</a>
               <br/>
                 Build version: {% version_date %}

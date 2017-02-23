@@ -2,78 +2,183 @@
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 
-<!-- <h1>Dashboard</h1> -->
+<div id="summary">
+{% include 'main/summary.html' %}
+</div>
 
-<!-- START TEST -->
-<div class="container">
 
+<!-- START Entry listing -->
+  <!-- http://stackoverflow.com/questions/1879872/django-update-div-with-ajax -->
+<div class="container-fluid">
+  <div style="visibility:hidden" id="latestid">{{ latestid }}</div>
   <div class="panel-group" id="accordion">
-    {% for entry in entries %}
-    <div class="panel panel-default" data-toggle="collapse" data-parent="#accordion" href="#{{ entry.id }}">
-      <div class="panel-heading">
-        <h4 class="panel-title">
-          <div >${{ entry.amount }}({{entry.singleormonthly}}): {{ entry.firstname }} {{ entry.lastname }} - {{ entry.city }}</div>
-        </h4>
-      </div>
-      <div id="{{entry.id}}" class="panel-collapse collapse">
-        <div class="panel-body">
-          <p><strong>First Time Donor:</strong> {{entry.ftdonor }} <br/>
-            <strong>Has Been Thanked:</strong> {{entry.beenthanked}}<br/>
-            <strong>Station:</strong> {{entry.callsign}}<br/>
-            <strong>Parish:</strong> {{entry.parish}}<br/>
-            <strong>Group Call-out:</strong> {{entry.groupcallout}}<br/>
-            <strong>Comment:</strong> {{entry.comment}}
-          </p>
-        </div>
-      </div>
-    </div>
-    {% endfor %}
-    <!-- https://simpleisbetterthancomplex.com/tutorial/2016/08/03/how-to-paginate-with-django.html -->
-    {% if entries.has_other_pages %}
-    <ul class="pagination">
-      {% if entries.has_previous %}
-        <li><a href="?page={{ entries.previous_page_number }}">&laquo;</a></li>
-      {% else %}
-        <li class="disabled"><span>&laquo;</span></li>
-      {% endif %}
-      {% for i in entries.paginator.page_range %}
-        {% if entries.number == i %}
-          <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
-        {% else %}
-          <li><a href="?page={{ i }}">{{ i }}</a></li>
-        {% endif %}
-      {% endfor %}
-      {% if entries.has_next %}
-        <li><a href="?page={{ entries.next_page_number }}">&raquo;</a></li>
-      {% else %}
-        <li class="disabled"><span>&raquo;</span></li>
-      {% endif %}
-    </ul>
-  {% endif %}
+
+    {% include 'main/multiple_pledges.html' %}
+
   </div>
-</div> <!--END TEST -->
+
+  <center>
+    <div id="spinner">
+      <img src="/static/main/ajax-loader.gif" />
+    </div>
+  </center>
+
+</div>
+<!--END Entry listing  -->
 
 
-{% endblock%}
+
+{% endblock %}
 
 
 {% block javascript %}
 <script type="text/javascript">
-$(document).ready(function() {
 
-  // js script for dashboard load/manage/etc
-  $("li.hoverclick").click(function(){
-    var index = $(this).index();
-    var text = $(this).text();
-    var id = $(this).attr('id');
-    var msg = 'id: ' + id + ' ind: ' + index + ' text: ' + text;
-    console.log(msg);
+
+// returns the greatest panel-collapse id number on the page
+function getLid(){
+  
+  var lid = $("#latestid").text();
+  // create an array
+  var ar = new Array();
+  // for each element with id that starts with 'id'
+  $('.panel-collapse').each(
+      function(){
+                  // add it to the array (only its numeric part)
+                  ar.push(
+                          // extract the numeric part to be added in the array
+                          parseInt( $(this).attr('id').replace('id','') )
+                        );
+                });
+  // find the max value in the array
+  pagelid = Math.max.apply(Math, ar);
+  
+  if (pagelid > lid){
+    $("#latestid").text(pagelid);
+    return pagelid;
+  } else {
+    return lid;
+  };
+}
+
+function getLid2(){
+  
+  // create an array
+  var ar = new Array();
+  // for each element with id that starts with 'id'
+  $('.panel-collapse').each(
+      function(){
+                  // add it to the array (only its numeric part)
+                  ar.push(
+                          // extract the numeric part to be added in the array
+                          parseInt( $(this).attr('id').replace('id','') )
+                        );
+                });
+  // find the max value in the array
+  pagelid = Math.min.apply(Math, ar);
+  return pagelid;
+}
+
+
+// runs every 3 seconds to check for new entries
+function updateEntries(){
+  //update list of entries
+
+  $.get('/ajax_retrieve_latest_entries/', { 'lid':getLid(), }, function(rawdata, status) {
+    if (status == 'success' ) {
+      
+      var data = $(rawdata).hide();
+      $(data).find(".hoverclick").addClass("new");
+
+      $("#accordion").prepend(data);
+  
+      var $newbies = $(".new");
+      
+      
+      $newbies.click(function(event){
+        $(this).stop().fadeOut(10).fadeIn(500);
+      });
+      
+      
+      $newbies.mouseenter(function(){
+        $(this).fadeOut(100);
+        $(this).fadeIn(100);
+      },null);
+      
+      
+      $newbies.removeClass("new");
+      
+      $.get('/ajax_get_summary/', { }, function(summarydata){
+        $("#summary").replaceWith('<div id="summary">' + summarydata + '</div>');
+      });
+      
+      data.show('normal');
+    }
   });
-  $("li.hoverclick").mouseenter(function(){
-    $(this).fadeOut(100);
-    $(this).fadeIn(300);
-  },null);
 
+};
+
+setInterval("updateEntries()",3000);
+
+
+
+$(document).ready(function() {
+  
+  $("#spinner").hide();
+  
+  // js script for list hover and click animation
+  $(".hoverclick").click(function(){
+    $(this).stop().fadeOut(10).fadeIn(500);
+  });
+  $(".hoverclick").mouseenter(function(){
+    $(this).fadeOut(100);
+    $(this).fadeIn(100);
+  },null);
+  
+  
+
+  // Start auto scroll
+  
+  $(window).data('ajaxready', true).scroll(function(){
+  if ($(window).data('ajaxready') == false) return;
+
+  var scrollTop = $(document).scrollTop();
+  var windowHeight = $(window).height();
+  var bodyHeight = $(document).height() - windowHeight;
+  var scrollPercentage = (scrollTop / bodyHeight);
+  var lid = getLid2();
+  
+  // if the scroll is more than 90% from the top, load more content.
+  if (lid > 1) {
+    if(scrollPercentage > 0.90) {
+      $(window).data('ajaxready', false);
+      // console.log("bottom");
+    	//ajax get of next data
+    	$("#spinner").show();
+    	$.get('/ajax_get_next_entries/', { 'lid': lid }, function(rawdata, status) {
+        if (status == 'success' ) {
+          
+          
+          var data = $(rawdata);
+          $(data).find(".hoverclick").click(function(event){
+            $(this).stop().fadeOut(10).fadeIn(500);
+          });
+          
+          
+          $(data).find(".hoverclick").mouseenter(function(){
+            $(this).fadeOut(100);
+            $(this).fadeIn(100);
+          },null);
+          
+          $("#spinner").hide();
+          $("#accordion").append(data);
+          $(window).data('ajaxready', true);
+        }
+      	})
+      }
+    }
+  });
+  // End auto scroll
 
 });
 </script>
@@ -95,5 +200,30 @@ $(document).ready(function() {
     background-color: #d9edf7;
     border-color: #337ab7;
 }
+.panel-default>.monthly {
+  
+    background-color: #ffffdc;
+}
+.panel-heading {
+    cursor: pointer;
+}
+.red{
+    boarder: 1px solid black;
+    outline-color: red;
+    outline-style: dotted;
+}
+.green{
+    boarder: 1px solid black;
+    outline-color: green;
+    outline-style: dotted;
+}
+.blue{
+    boarder: 1px solid black;
+    outline-color: blue;
+    outline-style: dotted;
+}
+
+
+
 </style>
 {% endblock %}
