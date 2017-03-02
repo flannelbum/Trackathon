@@ -1,42 +1,42 @@
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-sm-6">
+
+    <div class="col-sm-6">
+      <h3>Sharathon Totals Overall:</h3>
+      <h4>Grand Total <strong>${{ grand_total|floatformat:2 }}</strong></h4>
+      <h4>Total Pledges <strong>{{ total_pledges }}</strong></h4>
+      <h4>New Donors <strong>{{ total_new_donors }}</strong></h4>
+      <h4>Monthly Donations <strong>${{ total_new_donor_dollars|floatformat:2 }}</strong></h4>
+      <h4>Monthly Dollars <strong>${{ total_new_monthly_dollars|floatformat:2 }}</strong></h4>
       
-        <h1>Grand Total <strong>${{ grand_total|floatformat:2 }}</strong></h1>
-        <h2>Total Pledges <strong>{{ total_pledges }}</strong></h2>
-        <h2>New donors <strong>{{ total_new_donors }}</strong></h2>
-        <h2>New donor dollars <strong>${{ total_new_donor_dollars|floatformat:2 }}</strong></h2>
-        <h2>Monthly dollars <strong>${{ total_new_monthly_dollars|floatformat:2 }}</strong></h2>
-        
-      </div>
-  
-      <div class="col-sm-6">
-        
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Station</th>
-                <th>Total</th>
-                <th>Pledges</th>
-                <th>New Donors</th>
-                <th>Monthly Donations</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for station in stations %}
-              <tr>
-                <td>{{ station.callsign }}</td>
-                <td>${{ station.total|floatformat:2 }}</td>
-                <td>{{ station.pledges }}</td>
-                <td>{{ station.newdonors }}</td>
-                <td>{{ station.monthlies }}</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          
-        <!--</div>-->
-        
-      </div>
     </div>
-  </div>
+
+    <div class="col-sm-6">
+      
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Station</th>
+              <th>Total</th>
+              <th>Pledges</th>
+              <th>New Donors</th>
+              <th>Monthly Donations</th>
+              <th>Single Donations</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for station in stations %}
+            <tr>
+              <td>{{ station.callsign }}</td>
+              <td>${{ station.total|floatformat:2 }}</td>
+              <td>{{ station.pledges }}</td>
+              <td>{{ station.newdonors }}</td>
+              <td>{{ station.monthlies }}</td>
+              <td>{{ station.singles }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        
+      <!--</div>-->
+      
+    </div>
+

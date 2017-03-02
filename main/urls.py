@@ -8,4 +8,7 @@ urlpatterns = [
     url(r'^ajax_get_summary', views.ajax_get_summary, name='ajax_get_summary'),
     url(r'^ajax_retrieve_latest_entries/$', views.ajax_retrieve_latest_entries, name='ajax_retrieve_latest_entries'),
     url(r'^ajax_get_next_entries/$', views.ajax_get_next_entries, name='ajax_get_next_entries'),
+    url(r'^ajax_thank_id/$', views.ajax_thank_id, name="ajax_thank_id"),
+    url(r'^editPledgeEntry/$', views.editPledgeEntry, name="editPledgeEntry"),
+    # url(r'^test/$', views.test, name='test'),
 ]

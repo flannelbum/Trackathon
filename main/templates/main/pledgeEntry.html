@@ -4,10 +4,15 @@
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-sm-6">
-
-  			<h2>Pledge Entry</h2>
-				<a href="/pledgeEntry/?getrandom=True">Add Random</a>
+        {% if entryObject.id %}
+        <h2>Pledge EDIT: {{ entryObject.id }}: {{ entryObject.lastname }}</h2>
         <div id="pledgeFormContent">{% include 'main/pledgeEntryForm.html' %}
+        {% else %}
+  			<h2>Pledge Entry</h2>
+        <div id="pledgeFormContent">{% include 'main/pledgeEntryForm.html' %}
+				<a href="/pledgeEntry/?getrandom=True">Add Random</a>
+  			
+  			{% endif %}
 
       </div>
     </div>
@@ -96,5 +101,8 @@ table, th, td {
     background-color: #d9edf7;
     border: 1px solid #337ab7;
 }
+
+
+
 </style>
 {% endblock %}

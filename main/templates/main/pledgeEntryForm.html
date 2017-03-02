@@ -1,4 +1,11 @@
+{% if entryObject.id %}
+<form action="/editPledgeEntry/" method="POST" id="PledgeEntryForm" novalidate="novalidate">
+{% else %}
 <form action="/pledgeEntry/" method="POST" id="PledgeEntryForm" novalidate="novalidate">
+{% endif %}
+
+
+
 	{% csrf_token %}
 	<div class="form-group">
 		<table>
@@ -9,11 +16,20 @@
 			</tr>
 		{% endfor %}
 		</table>
+		
+    
+    {% if entryObject.id %}
+    <input type="hidden" name="entryid" value="{{ entryid }}"/>
+    <input type="submit" value="Edit" />
+    {% else %}
     <input type="submit" value="Submit" />
+    {% endif%}
+    
+    
   </div>
 </form>
 <ul id="recenEntries" class="list-group">
 	{% for entry in entries %}
-	<li class="list-group-item">{{ entry }}</li>
+	<li class="list-group-item"><a href="/editPledgeEntry/?entryid={{ entry.id }}">{{ entry.id }}</a> - {{ entry }}</li>
 	{% endfor%}
 </ul>

@@ -1,18 +1,24 @@
 {% extends 'main/index.html' %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-
-<div id="summary">
-{% include 'main/summary.html' %}
-</div>
-
+  {% csrf_token %}
+  <div id="sticky-anchor"></div>
+  <div id="sticky" class="container sticky" style="box-shadow: 0px 5px 5px #888888">
+    <a id="hs_totals" href="#collapse" data-toggle="collapse">Hide Totals</a>
+    <div class="row collapse in" id="collapse">
+      <div id="summary">
+        {% include 'main/summary.html' %}
+      </div>
+    </div>
+    <!-- New stuff could go here -->
+  </div>
 
 <!-- START Entry listing -->
   <!-- http://stackoverflow.com/questions/1879872/django-update-div-with-ajax -->
 <div class="container-fluid">
   <div style="visibility:hidden" id="latestid">{{ latestid }}</div>
   <div class="panel-group" id="accordion">
-
+  
     {% include 'main/multiple_pledges.html' %}
 
   </div>
@@ -136,6 +142,21 @@ $(document).ready(function() {
   },null);
   
   
+  // Start Hide/Show
+  
+  
+  $("#hs_totals").click(function(event){
+    var text = $(this).text();
+    if (text == "Hide Totals") {
+      $(this).text("Show Totals");
+    } else {
+      $(this).text("Hide Totals");
+    }
+  });
+  
+  
+  
+  // End Hide/Show
 
   // Start auto scroll
   
@@ -170,6 +191,14 @@ $(document).ready(function() {
             $(this).fadeIn(100);
           },null);
           
+          $(data).find(".thankbox").click(function(event){
+            var id = $(this).closest('.panel-collapse').prop('id')
+            var csrf = $("input[name='csrfmiddlewaretoken'").attr('value');
+            $(this).closest(".panel-collapse").parent().find('.glyphicon-alert').remove();
+            $(this).attr("disabled", true);
+            $.post("/ajax_thank_id/", { 'thankedid': id, 'csrfmiddlewaretoken': csrf })
+          });
+          
           $("#spinner").hide();
           $("#accordion").append(data);
           $(window).data('ajaxready', true);
@@ -179,6 +208,36 @@ $(document).ready(function() {
     }
   });
   // End auto scroll
+  
+  
+  // Begin sticky scroll
+  scrollIntervalID = setInterval(sticky_relocate, 10);
+  
+  
+  function sticky_relocate() {
+    var window_top = $(window).scrollTop();
+    var div_top = $('#sticky-anchor').offset().top;
+    if (window_top > div_top) {
+        $('#sticky').addClass('stick');
+        $('#sticky-anchor').height($('#sticky').outerHeight());
+        $(window).scrollTop(window_top);
+    } else {
+        $('#sticky').removeClass('stick');
+        $('#sticky-anchor').height(0);
+    }
+  }
+  // End sticky scroll
+  
+  
+  // Start Thanked handler
+  $(".thankbox").click(function(event){
+    var id = $(this).closest('.panel-collapse').prop('id')
+    var csrf = $("input[name='csrfmiddlewaretoken'").attr('value');
+    $(this).closest(".panel-collapse").parent().find('.glyphicon-alert').remove();
+    $(this).attr("disabled", true);
+    $.post("/ajax_thank_id/", { 'thankedid': id, 'csrfmiddlewaretoken': csrf })
+  });
+  // End Thanked handler
 
 });
 </script>
@@ -187,6 +246,32 @@ $(document).ready(function() {
 
 {% block style %}
 <style>
+
+
+/*  https://jsfiddle.net/livibetter/HV9HM/  */
+.sticky {
+    /*padding: 0.5ex;*/
+    /*width: 600px;*/
+    background-color: white;
+    /*color: #fff;*/
+    /*font-size: 2em;*/
+    /*border-radius: 0.5ex;*/
+    width: inherit;
+}
+
+#sticky.stick {
+    /*margin-top: 0 !important;*/
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+    /*border-radius: 0 0 0.5em 0.5em;*/
+}
+
 .list-group-item {
     position: relative;
     display: block;
@@ -222,7 +307,9 @@ $(document).ready(function() {
     outline-color: blue;
     outline-style: dotted;
 }
-
+input[type="checkbox"] {
+  transform:scale(2, 2);
+}
 
 
 </style>

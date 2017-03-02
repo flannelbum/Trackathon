@@ -1,6 +1,6 @@
 from django import forms
 from main.models import PledgeEntry
-from django.forms.widgets import RadioSelect, TextInput
+from django.forms.widgets import RadioSelect, TextInput, CheckboxInput
 
 # class TestForm(forms.Form):
 
@@ -31,24 +31,33 @@ class PledgeEntryForm(forms.Form):
         ),
         label='City',
     )
-
-
+    
+    
     ftdonor = forms.BooleanField(
         required=False,
-        widget=RadioSelect(
-            choices=PledgeEntry.BOOL_CHOICES
-        ),
+        widget=CheckboxInput(),
+        #     choices=PledgeEntry.BOOL_CHOICES
+        # ),
         label='First Time Donor',
     )
 
 
-    beenthanked = forms.BooleanField(
-        required=False,
-        widget=RadioSelect(
-            choices=PledgeEntry.BOOL_CHOICES
-        ),
-        label='Has been thanked',
-    )
+    # ftdonor = forms.BooleanField(
+    #     required=False,
+    #     widget=RadioSelect(
+    #         choices=PledgeEntry.BOOL_CHOICES
+    #     ),
+    #     label='First Time Donor',
+    # )
+
+
+    # beenthanked = forms.BooleanField(
+    #     required=False,
+    #     widget=RadioSelect(
+    #         choices=PledgeEntry.BOOL_CHOICES
+    #     ),
+    #     label='Has been thanked',
+    # )
 
 
     amount = forms.DecimalField(
@@ -80,6 +89,7 @@ class PledgeEntryForm(forms.Form):
 
 
     groupcallout = forms.CharField(
+        required=False,
         max_length=100,
         widget=TextInput(
             attrs={'autocomplete':'off'}
@@ -89,6 +99,7 @@ class PledgeEntryForm(forms.Form):
 
 
     comment = forms.CharField(
+        required=False,
         widget=forms.Textarea(
             attrs={'autocomplete':'off'}
         ),
