@@ -68,13 +68,19 @@ class PledgeEntryForm(forms.Form):
 
 
     singleormonthly = forms.ChoiceField(
+        widget=forms.RadioSelect(
+            attrs={'style': 'list-style-type: none;'}
+        ),
         choices=PledgeEntry.ONETIMEORMONTHLY_CHOICES,
         label='Single or Monthly',
     )
 
 
     callsign = forms.ChoiceField(
+        widget=forms.RadioSelect(attrs={'style': 'list-style-type: none;'}),
+        # widget=forms.RadioSelect(attrs={'class': 'classy'}),
         choices=PledgeEntry.STATION_CHOICES,
+        # attrs={'style': 'list-style: none;'},
         label='Station',
     )
 

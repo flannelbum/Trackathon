@@ -14,7 +14,6 @@
   </div>
 
 <!-- START Entry listing -->
-  <!-- http://stackoverflow.com/questions/1879872/django-update-div-with-ajax -->
 <div class="container-fluid">
   <div style="visibility:hidden" id="latestid">{{ latestid }}</div>
   <div class="panel-group" id="accordion">
@@ -49,13 +48,13 @@ function getLid(){
   var ar = new Array();
   // for each element with id that starts with 'id'
   $('.panel-collapse').each(
-      function(){
-                  // add it to the array (only its numeric part)
-                  ar.push(
-                          // extract the numeric part to be added in the array
-                          parseInt( $(this).attr('id').replace('id','') )
-                        );
-                });
+    function(){
+      // add it to the array (only its numeric part)
+      ar.push(
+        // extract the numeric part to be added in the array
+        parseInt( $(this).attr('id').replace('id','') )
+      );
+  });
   // find the max value in the array
   pagelid = Math.max.apply(Math, ar);
   
@@ -73,13 +72,13 @@ function getLid2(){
   var ar = new Array();
   // for each element with id that starts with 'id'
   $('.panel-collapse').each(
-      function(){
-                  // add it to the array (only its numeric part)
-                  ar.push(
-                          // extract the numeric part to be added in the array
-                          parseInt( $(this).attr('id').replace('id','') )
-                        );
-                });
+    function(){
+      // add it to the array (only its numeric part)
+      ar.push(
+        // extract the numeric part to be added in the array
+        parseInt( $(this).attr('id').replace('id','') )
+      );
+  });
   // find the max value in the array
   pagelid = Math.min.apply(Math, ar);
   return pagelid;
@@ -110,6 +109,16 @@ function updateEntries(){
         $(this).fadeOut(100);
         $(this).fadeIn(100);
       },null);
+      
+      var $thankbox = $(data).find(".thankbox");
+      
+      $thankbox.click(function(event){
+        var id = $(this).closest('.panel-collapse').prop('id')
+        var csrf = $("input[name='csrfmiddlewaretoken'").attr('value');
+        $(this).closest(".panel-collapse").parent().find('.glyphicon-alert').remove();
+        $(this).attr("disabled", true);
+        $.post("/ajax_thank_id/", { 'thankedid': id, 'csrfmiddlewaretoken': csrf })
+      });
       
       
       $newbies.removeClass("new");
@@ -248,19 +257,12 @@ $(document).ready(function() {
 <style>
 
 
-/*  https://jsfiddle.net/livibetter/HV9HM/  */
 .sticky {
-    /*padding: 0.5ex;*/
-    /*width: 600px;*/
     background-color: white;
-    /*color: #fff;*/
-    /*font-size: 2em;*/
-    /*border-radius: 0.5ex;*/
     width: inherit;
 }
 
 #sticky.stick {
-    /*margin-top: 0 !important;*/
     position: fixed;
     top: 0;
     z-index: 1000;
@@ -269,7 +271,6 @@ $(document).ready(function() {
     padding-left: 15px;
     margin-right: auto;
     margin-left: auto;
-    /*border-radius: 0 0 0.5em 0.5em;*/
 }
 
 .list-group-item {

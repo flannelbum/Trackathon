@@ -12,8 +12,8 @@
         {% if entry.beenthanked == False %}
         <span class="glyphicon glyphicon-alert"></span>
         {% endif %}
+        
         {% if entry.ftdonor == True %}
-      
         <span class="glyphicon glyphicon-heart"></span>
         {% endif %}
         
@@ -23,23 +23,20 @@
   </div>
   <div id="{{ entry.id }}" class="panel-collapse collapse">
     <div class="panel-body">
-      <p>
-        <strong>Created:</strong> {{ entry.create_date }} <strong>SystemID:</strong> {{ entry.id }}<br/>
-        <!--<strong>First Time Donor:</strong> {{ entry.ftdonor }} <br/>-->
-        
-        <strong>Thanked: </strong>
+      <div><strong>Created:</strong> {{ entry.create_date }} <strong>SystemID:</strong> {{ entry.id }}</div>
+      <div><strong>Single/Monthly: </strong>{{ entry.singleormonthly|title }} <strong>First Time Donor: </strong>{{ entry.ftdonor }}</div>
+      <div><strong>Thanked: </strong>
         {%if entry.beenthanked %}
-        <input type="checkbox" checked="True" disabled/>
+        <input style="position:relative;left:10px" type="checkbox" checked="True" disabled /> 
         {% else %}
-        <input class="thankbox" type="checkbox" />
+        <input style="position:relative;left:10px" class="thankbox" type="checkbox" /> 
         {% endif %}
-        <br/>
-        <!--<strong>Has Been Thanked:</strong> {{ entry.beenthanked }}<br/>-->
-        <strong>Station:</strong> {{ entry.callsign }}<br/>
-        <strong>Parish:</strong> {{ entry.parish }}<br/>
-        <strong>Group Call-out:</strong> {{ entry.groupcallout }}<br/>
-        <strong>Comment:</strong> {{ entry.comment }}
-      </p>
+      </div>
+      <div><strong>Station:</strong> {{ entry.callsign }}</div>
+      <div><strong>Parish:</strong> {{ entry.parish }}</div>
+      <div><strong>Group Call-out:</strong> {{ entry.groupcallout }}</div>
+      <div><strong>Comment:</strong> {{ entry.comment }}</div>
+      <div style="text-align:center;top:10px"><a href="/editPledgeEntry/?entryid={{ entry.id }}">Edit this entry</a></div>
     </div>
   </div>
 </div>

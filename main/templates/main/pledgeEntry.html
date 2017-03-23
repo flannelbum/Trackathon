@@ -5,7 +5,7 @@
 	<div class="row">
 		<div class="col-sm-6">
         {% if entryObject.id %}
-        <h2>Pledge EDIT: {{ entryObject.id }}: {{ entryObject.lastname }}</h2>
+        <h3>Edit: ${{ entryObject.amount }} ({{ entryObject.singleormonthly|title }}) - {{ entryObject.lastname }}</h3>
         <div id="pledgeFormContent">{% include 'main/pledgeEntryForm.html' %}
         {% else %}
   			<h2>Pledge Entry</h2>
@@ -19,9 +19,18 @@
     <div class="col-sm-6">
 
       <h2>Recent Entries</h2>
-
-			<div id="re_jquerytarget">
-			</div>
+      <ul id="recenEntries" class="list-group">
+        
+        <div class="container-fluid">
+          <div style="visibility:hidden" id="latestid">{{ latestid }}</div>
+          <div class="panel-group" id="accordion">
+          
+            {% include 'main/multiple_pledges.html' %}
+        
+          </div>
+        
+        </div>
+      </ul>
     </div>
   </div>
 </div>
@@ -30,62 +39,20 @@
 {% block javascript %}
 <script type="text/javascript">
 $(document).ready(function() {
-
-  // BEGIN Recent Entries Handler
-
-  $("#addRandom").click(function(eventObject) {
-    var textNames = [
-      'Alpha','Bravo','Charlie','Delta','Echo','Foxtrot','Golf','Hotel','India','Juliet','Kilo','Lima',
-      'Mike','November','Oscar','Papa','Quebec','Romeo','Sieerra','Tango','Uniform','Victor','Whiskey',
-      'X-Ray','Yankee','Zulu'
-    ];
-    eventObject.preventDefault();
-    var name = textNames[Math.floor(Math.random()*textNames.length)] + ' ' +
-      textNames[Math.floor(Math.random()*textNames.length)];
-      addEntry(name);
+  $(".hoverclick").click(function(){
+    $(this).stop().fadeOut(10).fadeIn(500);
   });
-
-
-	function addEntry(strEntry){
-    $("#recenEntries").prepend('<li class="list-group-item">'+strEntry+'</li>');
-  };
-
-
-  // END Recent Entries handler
-
-	// Resituate the recentEntries (hack)
-	$("#re_jquerytarget").html( $("#recenEntries").html() );
-	$("#recenEntries").remove();
-	// END recentEntries resituation
-
-  // BEGIN pledgeEntry post
-  $("#cornerstone_no").on('submit','#pageContent', function(eventObject) {
-    eventObject.preventDefault();
-
-    $.post( "/pledgeEntry/", $("#PledgeEntryForm").serialize() )
-      .done(function( data ) {
-					var data2 = $(data).html();
-					var find = $(data2).find(".div").hasClass("form-group");
-					console.log(find);
-					// var pform = $("#PledgeEntryForm", $(data)).val();
-					var pform = $(data).find("#PledgeEntryForm").val();
-					var rentries = $("#recenEntries", $(data)).val();
-
-        	$('#pledgeFormContent').html(pform);
-					$('#recenEntries').html(rentries);
-
-      })
-      .fail(function( data ) {
-        console.log("JQuery POST failed!  -- ");
-        console.log(data);
-      })
-
-
-  });
-  // End pledgeEntry post
+  $(".hoverclick").mouseenter(function(){
+    $(this).fadeOut(100);
+    $(this).fadeIn(100);
+  },null);
 });
+
+$('.panel-group input[type=checkbox]').attr('disabled','true');
+
 </script>
 {% endblock %}
+
 
 {% block style %}
 <style>
@@ -102,7 +69,40 @@ table, th, td {
     border: 1px solid #337ab7;
 }
 
+.form-group ul {
+  list-style: none;
+  position:relative;
+  right:35px;
+}
 
+input[type="checkbox"] {
+  transform:scale(2, 2);
+  position:relative;
+  left:10px;
+  top:3px;
+}
+
+
+.list-group-item {
+    position: relative;
+    display: block;
+    padding: 10px 15px;
+    margin-bottom: -1px;
+    background-color: #d9edf7;
+    border: 2px solid #337ab7;
+}
+.panel-default>.panel-heading {
+    color: #333;
+    background-color: #d9edf7;
+    border-color: #337ab7;
+}
+.panel-default>.monthly {
+  
+    background-color: #ffffdc;
+}
+.panel-heading {
+    cursor: pointer;
+}
 
 </style>
 {% endblock %}
