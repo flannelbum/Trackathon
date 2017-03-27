@@ -75,7 +75,10 @@ def get_summaryData(lid):
     total_pledges = entries.count()
     total_new_donors = entries.filter(ftdonor__exact=True).count()
     total_new_donor_dollars = entries.filter(ftdonor__exact=True).aggregate(Sum('amount'))['amount__sum']
-    total_new_monthly_dollars = entries.filter(singleormonthly__exact="monthly").aggregate(Sum('amount'))['amount__sum']
+    total_monthly_donors = entries.filter(singleormonthly__exact="monthly").count()
+    total_monthly_dollars = entries.filter(singleormonthly__exact="monthly").aggregate(Sum('amount'))['amount__sum']
+    total_single_donors = entries.filter(singleormonthly__exact="single").count()
+    total_single_dollars = entries.filter(singleormonthly__exact="single").aggregate(Sum('amount'))['amount__sum']
     
     ### Possible MySQL snip to prevent the read from locking
     # SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED ;
@@ -97,7 +100,10 @@ def get_summaryData(lid):
       'total_pledges': total_pledges,
       'total_new_donors': total_new_donors,
       'total_new_donor_dollars': total_new_donor_dollars,
-      'total_new_monthly_dollars': total_new_monthly_dollars,
+      'total_monthly_donors': total_monthly_donors,
+      'total_monthly_dollars': total_monthly_dollars,
+      'total_single_donors': total_single_donors,
+      'total_single_dollars': total_single_dollars,
     }
   # else:
     # print("returning cached summaryData")
@@ -239,6 +245,7 @@ def pledgeEntry(request):
       groupcallout = form.cleaned_data['groupcallout'],
       comment = form.cleaned_data['comment'],
     )
+    print(entry.firstname)
     entry.save()
     form = PledgeEntryForm(None)
     entries = PledgeEntry.objects.order_by('-id')[:20]#[::-1]

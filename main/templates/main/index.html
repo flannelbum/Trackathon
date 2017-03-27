@@ -33,18 +33,44 @@
     <meta name="theme-color" content="#ffffff">
 
     <title>{% block title %}Track-A-Thon{% endblock %}</title>
+    
+    <script>
+      function startTime() {
+          var today = new Date();
+          var h = today.getHours();
+          var m = today.getMinutes();
+          var s = today.getSeconds();
+          if (h > 12 ){
+            h = h - 12;
+          }
+          m = checkTime(m);
+          s = checkTime(s);
+          timestring = h + ":" + m + ":" + s;
+          document.getElementById('clock').innerHTML =
+          timestring;
+          var t = setTimeout(startTime, 500);
+      }
+      function checkTime(i) {
+          if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+          return i;
+      }
+    </script>
   </head>
-  <body>
+  <body onload="startTime()">
+    
     <!--  NAV  -->
-    <div class="panel panel-info">
+    <div id="nav" class="panel panel-info">
       <div class="panel-heading" style="font-weight: bold;">
           <h4 class="panel-title">
             <ul class="nav nav-pills">
               <li id="nav_main" role="navigation"><a href="/">Dashboard</a></li>
               <li id="nav_pledgeEntry" role="navigation"><a href="/pledgeEntry/">Pledge Entry</a></li>
               
+              <span style="font-size: 35px; font-style: italic; position:relative; left:50px; opacity:0.2;">Track-a-Thon</span>
+              
               <div class="pull-right">
-                <a href="/config/"><span class="glyphicon glyphicon-cog"></span></a>
+                <span id="clock" style="font-size: 30px"></span>
+                <a href="/config/"><span class="glyphicon glyphicon-cog" style="font-size: 25px"></span></a>
               </div>
             </ul>
           </h4>
@@ -72,15 +98,7 @@
                 Tell <a href="mailto:flannelbum@gmail.com">flannelbum</a> about it!
               </p>
               {% endblock %}
-              <p>
-                All data is fake.  Site is in Alpha testing - it's missing features and functionality.
-              <br/>{% load version %}
-                Email feedback to: <a href="mailto:flannelbum@gmail.com?Subject=Trackathon%20feedback%20ver{% version_date %}">flannelbum@gmail.com</a> - Project files on <a href="https://github.com/flannelbum/Trackathon" target="_new">GitHub</a>
-              <br/>
-                Build version: {% version_date %}
-              </p>
-
-
+            
             </div>
           </div>
         </div>
@@ -88,6 +106,7 @@
     </div>
 
     <!-- Bottom script stuff -->
+
     {% block style %}{% endblock %}
 
     <script src="/static/main/js/jquery1.12.4.min.js"></script>

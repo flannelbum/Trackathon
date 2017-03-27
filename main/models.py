@@ -18,6 +18,7 @@ class PledgeEntry(models.Model):
         ('WSHB', '90.9 WSHB Willard-Shelby'),
         ('WRRO', '89.9 WRRO Edon-Bryan'),
         ('WLBJ', '104.1 WLBJ Fostoria'),
+        ('WEB', 'Online/WEB'),
     )
     ONETIMEORMONTHLY_CHOICES = (
         ('single','Single'),

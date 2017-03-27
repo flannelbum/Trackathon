@@ -1,3 +1,4 @@
+{% load prepend_dollars %}
 <div class="panel panel-default">
   <!-- {{ entry.id }} -->
 
@@ -17,7 +18,7 @@
         <span class="glyphicon glyphicon-heart"></span>
         {% endif %}
         
-        ${{ entry.amount }} - {{ entry.firstname }} {{ entry.lastname }} - {{ entry.city }} - {{ entry.callsign }}
+        {{ entry.amount | prepend_dollars }} - {{ entry.firstname }} {{ entry.lastname }} - {{ entry.city }} - {{ entry.callsign }}
       </div>
     </h4>
   </div>

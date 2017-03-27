@@ -13,6 +13,9 @@ class PledgeEntryForm(forms.Form):
         ),
         label='First Name',
     )
+    def clean_firstname(self):
+      return self.cleaned_data['firstname'].upper()
+
 
 
     lastname = forms.CharField(
@@ -22,6 +25,9 @@ class PledgeEntryForm(forms.Form):
         ),
         label='Last Name',
     )
+    def clean_lastname(self):
+      return self.cleaned_data['lastname'].upper()
+
 
 
     city = forms.CharField(
@@ -31,6 +37,9 @@ class PledgeEntryForm(forms.Form):
         ),
         label='City',
     )
+    def clean_city(self):
+      return self.cleaned_data['city'].upper()
+  
     
     
     ftdonor = forms.BooleanField(
@@ -92,6 +101,9 @@ class PledgeEntryForm(forms.Form):
         ),
         label='Parish',
     )
+    def clean_parish(self):
+      return self.cleaned_data['parish'].upper()
+
 
 
     groupcallout = forms.CharField(
@@ -102,6 +114,9 @@ class PledgeEntryForm(forms.Form):
         ),
         label='Group Call-Out',
     )
+    def clean_groupcallout(self):
+      return self.cleaned_data['groupcallout'].upper()
+
 
 
     comment = forms.CharField(
@@ -111,3 +126,5 @@ class PledgeEntryForm(forms.Form):
         ),
         label='Comments',
     )
+    def clean_comment(self):
+      return self.cleaned_data['comment'].upper()
