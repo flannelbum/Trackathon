@@ -220,6 +220,11 @@ def editPledgeEntry(request):
     form.fields["parish"].initial = p.parish
     form.fields["groupcallout"].initial = p.groupcallout
     form.fields["comment"].initial = p.comment
+    
+    # refresh cach by setting global latestid back to 0
+    global latestid
+    latestid = 0
+    
   return render(request, 'main/pledgeEntry.html', { 'form': form, 'entryid': entryid, 'entryObject': p, 'entries': entries })
   
 
