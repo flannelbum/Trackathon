@@ -57,66 +57,115 @@ def csvExport(request):
   return response
   
   
-  
-## CACHE IMPLEMENTATION - Programatic Style
-## Used by dashboard and ajax_get_summary
-## Returns cached or refreshed summaryData based on passed lid
-## Abuses global variables: latestid and summaryData 
-latestid = 0 
+
 def get_summaryData(lid):
-  global latestid, summaryData
+  latestid = PledgeEntry.objects.latest('id').id
+  entries = PledgeEntry.objects.all()
   
-  if lid > latestid:
-    # print("refreshing summaryData")
-    latestid = PledgeEntry.objects.latest('id').id
-    entries = PledgeEntry.objects.all()
-    
-    grand_total = entries.aggregate(Sum('amount'))['amount__sum']
-    total_pledges = entries.count()
-    total_new_donors = entries.filter(ftdonor__exact=True).count()
-    total_new_donor_dollars = entries.filter(ftdonor__exact=True).aggregate(Sum('amount'))['amount__sum']
-    total_monthly_donors = entries.filter(singleormonthly__exact="monthly").count()
-    total_monthly_dollars = entries.filter(singleormonthly__exact="monthly").aggregate(Sum('amount'))['amount__sum']
-    total_single_donors = entries.filter(singleormonthly__exact="single").count()
-    total_single_dollars = entries.filter(singleormonthly__exact="single").aggregate(Sum('amount'))['amount__sum']
-    
-    ### Possible MySQL snip to prevent the read from locking
-    # SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED ;
-    # SELECT * FROM TABLE_NAME ;
-    # COMMIT ;
-    
-    sql = "SELECT id, callsign, SUM(amount) AS total, COUNT(id) AS pledges, "
-    sql += "SUM(CASE WHEN ftdonor = '1' THEN 1 ELSE 0 END) AS newdonors, "
-    sql += "SUM(CASE WHEN singleormonthly = 'monthly' THEN 1 ELSE 0 END) AS monthlies, "
-    sql += "SUM(CASE WHEN singleormonthly = 'single' THEN 1 ELSE 0 END) AS singles "
-    sql += "FROM main_pledgeentry GROUP BY callsign ORDER BY SUM(amount) DESC "
+  grand_total = entries.aggregate(Sum('amount'))['amount__sum']
+  total_pledges = entries.count()
+  total_new_donors = entries.filter(ftdonor__exact=True).count()
+  total_new_donor_dollars = entries.filter(ftdonor__exact=True).aggregate(Sum('amount'))['amount__sum']
+  total_monthly_donors = entries.filter(singleormonthly__exact="monthly").count()
+  total_monthly_dollars = entries.filter(singleormonthly__exact="monthly").aggregate(Sum('amount'))['amount__sum']
+  total_single_donors = entries.filter(singleormonthly__exact="single").count()
+  total_single_dollars = entries.filter(singleormonthly__exact="single").aggregate(Sum('amount'))['amount__sum']
   
-    stations = PledgeEntry.objects.raw(sql)
-    
-    summaryData = {
-      'latestid': latestid,
-      'stations': stations,
-      'grand_total': grand_total,
-      'total_pledges': total_pledges,
-      'total_new_donors': total_new_donors,
-      'total_new_donor_dollars': total_new_donor_dollars,
-      'total_monthly_donors': total_monthly_donors,
-      'total_monthly_dollars': total_monthly_dollars,
-      'total_single_donors': total_single_donors,
-      'total_single_dollars': total_single_dollars,
-    }
+  ### Possible MySQL snip to prevent the read from locking
+  # SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED ;
+  # SELECT * FROM TABLE_NAME ;
+  # COMMIT ;
+  
+  sql = "SELECT id, callsign, SUM(amount) AS total, COUNT(id) AS pledges, "
+  sql += "SUM(CASE WHEN ftdonor = '1' THEN 1 ELSE 0 END) AS newdonors, "
+  sql += "SUM(CASE WHEN singleormonthly = 'monthly' THEN 1 ELSE 0 END) AS monthlies, "
+  sql += "SUM(CASE WHEN singleormonthly = 'single' THEN 1 ELSE 0 END) AS singles "
+  sql += "FROM main_pledgeentry GROUP BY callsign ORDER BY SUM(amount) DESC "
+
+  stations = PledgeEntry.objects.raw(sql)
+  
+  summaryData = {
+    'latestid': latestid,
+    'stations': stations,
+    'grand_total': grand_total,
+    'total_pledges': total_pledges,
+    'total_new_donors': total_new_donors,
+    'total_new_donor_dollars': total_new_donor_dollars,
+    'total_monthly_donors': total_monthly_donors,
+    'total_monthly_dollars': total_monthly_dollars,
+    'total_single_donors': total_single_donors,
+    'total_single_dollars': total_single_dollars,
+  }
   # else:
     # print("returning cached summaryData")
     
   return summaryData
 
+
+
+## !!!! Emperor worker processes aren't updating !!!!   
+## (broke) CACHE IMPLEMENTATION - Programatic Style
+## Used by dashboard and ajax_get_summary
+## Returns cached or refreshed summaryData based on passed lid
+## Abuses global variables: latestid and summaryData 
+# latestid = 0 
+# def broke_get_summaryData(lid):
+#   global latestid, summaryData
+  
+#   if lid > latestid:
+#     # print("refreshing summaryData")
+#     latestid = PledgeEntry.objects.latest('id').id
+#     entries = PledgeEntry.objects.all()
+    
+#     grand_total = entries.aggregate(Sum('amount'))['amount__sum']
+#     total_pledges = entries.count()
+#     total_new_donors = entries.filter(ftdonor__exact=True).count()
+#     total_new_donor_dollars = entries.filter(ftdonor__exact=True).aggregate(Sum('amount'))['amount__sum']
+#     total_monthly_donors = entries.filter(singleormonthly__exact="monthly").count()
+#     total_monthly_dollars = entries.filter(singleormonthly__exact="monthly").aggregate(Sum('amount'))['amount__sum']
+#     total_single_donors = entries.filter(singleormonthly__exact="single").count()
+#     total_single_dollars = entries.filter(singleormonthly__exact="single").aggregate(Sum('amount'))['amount__sum']
+    
+#     ### Possible MySQL snip to prevent the read from locking
+#     # SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED ;
+#     # SELECT * FROM TABLE_NAME ;
+#     # COMMIT ;
+    
+#     sql = "SELECT id, callsign, SUM(amount) AS total, COUNT(id) AS pledges, "
+#     sql += "SUM(CASE WHEN ftdonor = '1' THEN 1 ELSE 0 END) AS newdonors, "
+#     sql += "SUM(CASE WHEN singleormonthly = 'monthly' THEN 1 ELSE 0 END) AS monthlies, "
+#     sql += "SUM(CASE WHEN singleormonthly = 'single' THEN 1 ELSE 0 END) AS singles "
+#     sql += "FROM main_pledgeentry GROUP BY callsign ORDER BY SUM(amount) DESC "
+  
+#     stations = PledgeEntry.objects.raw(sql)
+    
+#     summaryData = {
+#       'latestid': latestid,
+#       'stations': stations,
+#       'grand_total': grand_total,
+#       'total_pledges': total_pledges,
+#       'total_new_donors': total_new_donors,
+#       'total_new_donor_dollars': total_new_donor_dollars,
+#       'total_monthly_donors': total_monthly_donors,
+#       'total_monthly_dollars': total_monthly_dollars,
+#       'total_single_donors': total_single_donors,
+#       'total_single_dollars': total_single_dollars,
+#     }
+#   # else:
+#     # print("returning cached summaryData")
+    
+#   return summaryData
+
   
   
 def dashboard(request):
-  latestid = PledgeEntry.objects.latest('id').id
-  context = get_summaryData(latestid)
-  context['entries'] = PledgeEntry.objects.all().order_by('-id')[:15]
-  return render(request, 'main/dashboard.html', context)
+  try:
+    latestid = PledgeEntry.objects.latest('id').id
+    context = get_summaryData(latestid)
+    context['entries'] = PledgeEntry.objects.all().order_by('-id')[:15]
+    return render(request, 'main/dashboard.html', context)
+  except:
+    return render(request, 'main/index.html', {})
   
   
   
@@ -220,10 +269,6 @@ def editPledgeEntry(request):
     form.fields["parish"].initial = p.parish
     form.fields["groupcallout"].initial = p.groupcallout
     form.fields["comment"].initial = p.comment
-    
-    # refresh cach by setting global latestid back to 0
-    global latestid
-    latestid = 0
     
   return render(request, 'main/pledgeEntry.html', { 'form': form, 'entryid': entryid, 'entryObject': p, 'entries': entries })
   
