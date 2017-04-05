@@ -38,7 +38,7 @@ def config(request):
   
 def csvExport(request):
   cfgpw = request.POST.get('cfgpw')
-  print(cfgpw)
+  # print(cfgpw)
   
   if cfgpw == settings.CONFIG_PASSWORD:
     filename = "TrackAThonExport_" + time.strftime("%m%d-%H%M%S") + ".csv"
@@ -50,7 +50,12 @@ def csvExport(request):
     
     entries = PledgeEntry.objects.all()
     for entry in entries:
-      writer.writerow([ entry.id, entry.create_date.strftime("%Y-%m-%d %H:%m:%S"), entry.amount, entry.firstname, entry.lastname, entry.city, entry.ftdonor, entry.singleormonthly, entry.callsign, entry.parish, entry.groupcallout, entry.comment])
+      # writer.writerow([ entry.id, entry.create_date.strftime("%Y-%m-%d %H:%m:%S"), entry.amount, entry.firstname, entry.lastname, entry.city, entry.ftdonor, entry.singleormonthly, entry.callsign, entry.parish, entry.groupcallout, entry.comment])
+      ## fix up the hour string for -4
+      myhour = entry.create_date.strftime("%H")
+      myhour =+ int(myhour) - 4
+      timestr = entry.create_date.strftime("%Y/%m/%d ") + str(myhour) + ":" + entry.create_date.strftime("%M:%S")
+      writer.writerow([ entry.id, timestr, entry.amount, entry.firstname, entry.lastname, entry.city, entry.ftdonor, entry.singleormonthly, entry.callsign, entry.parish, entry.groupcallout, entry.comment])
   else:
     # Return silent/404 if blank GET request
     return HttpResponse(status=404)
@@ -236,7 +241,7 @@ def editPledgeEntry(request):
   
   if entryid == 0:
     entryid = int_or_0(request.GET.get('entryid'))
-  print(entryid)
+  # print(entryid)
   
   p = PledgeEntry.objects.get(pk=entryid)
   
@@ -299,9 +304,10 @@ def pledgeEntry(request):
     entry.save()
     form = PledgeEntryForm(None)
     entries = PledgeEntry.objects.order_by('-id')[:20]#[::-1]
+    return HttpResponseRedirect('/pledgeEntry/')
 
   if request.GET.get('getrandom',None):
-    print("getting random pledge")
+    # print("getting random pledge")
     myform = getRandomPledgeForm()
     form.fields["firstname"].initial = myform.firstname
     form.fields["lastname"].initial = myform.lastname
