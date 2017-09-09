@@ -108,3 +108,4 @@ venv.bak/
 .settings/
 .pydevproject
 .project
+/db.sqlite3
