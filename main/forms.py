@@ -31,6 +31,7 @@ class PledgeEntryForm(forms.Form):
 
 
     city = forms.CharField(
+        required = False,
         max_length=35,
         widget=TextInput(
             attrs={'autocomplete':'off'}
@@ -77,6 +78,7 @@ class PledgeEntryForm(forms.Form):
 
 
     singleormonthly = forms.ChoiceField(
+        required = False,
         widget=forms.RadioSelect(
             attrs={'style': 'list-style-type: none;'}
         ),
@@ -86,6 +88,7 @@ class PledgeEntryForm(forms.Form):
 
 
     callsign = forms.ChoiceField(
+        required = False,
         widget=forms.RadioSelect(attrs={'style': 'list-style-type: none;'}),
         # widget=forms.RadioSelect(attrs={'class': 'classy'}),
         choices=PledgeEntry.STATION_CHOICES,
