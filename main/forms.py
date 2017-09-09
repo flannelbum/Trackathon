@@ -14,7 +14,7 @@ class PledgeEntryForm(forms.Form):
         label='First Name',
     )
     def clean_firstname(self):
-      return self.cleaned_data['firstname'].upper()
+        return self.cleaned_data['firstname'].upper()
 
 
 
@@ -26,7 +26,7 @@ class PledgeEntryForm(forms.Form):
         label='Last Name',
     )
     def clean_lastname(self):
-      return self.cleaned_data['lastname'].upper()
+        return self.cleaned_data['lastname'].upper()
 
 
 
@@ -38,7 +38,7 @@ class PledgeEntryForm(forms.Form):
         label='City',
     )
     def clean_city(self):
-      return self.cleaned_data['city'].upper()
+        return self.cleaned_data['city'].upper()
   
     
     
@@ -102,7 +102,7 @@ class PledgeEntryForm(forms.Form):
         label='Parish',
     )
     def clean_parish(self):
-      return self.cleaned_data['parish'].upper()
+        return self.cleaned_data['parish'].upper()
 
 
 
@@ -115,7 +115,7 @@ class PledgeEntryForm(forms.Form):
         label='Group Call-Out',
     )
     def clean_groupcallout(self):
-      return self.cleaned_data['groupcallout'].upper()
+        return self.cleaned_data['groupcallout'].upper()
 
 
 
@@ -127,4 +127,4 @@ class PledgeEntryForm(forms.Form):
         label='Comments',
     )
     def clean_comment(self):
-      return self.cleaned_data['comment'].upper()
+        return self.cleaned_data['comment'].upper()
