@@ -77,6 +77,7 @@ class PledgeEntryForm(forms.Form):
 
 
     singleormonthly = forms.ChoiceField(
+        required = False,
         widget=forms.RadioSelect(
             attrs={'style': 'list-style-type: none;'}
         ),
