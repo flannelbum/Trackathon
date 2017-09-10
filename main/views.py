@@ -1,19 +1,21 @@
-import time
 import csv
+import time
+
 from django.conf import settings
-from django.shortcuts import render #, redirect
-from django.http import HttpResponse, HttpResponseRedirect
-# from django.core.paginator import Paginator
 from django.db.models import Sum
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render  # , redirect
+from django.template.context_processors import request
+
+from main.customFunctions import getRandomPledgeForm  # , prettydate
 from main.forms import PledgeEntryForm
 from main.models import PledgeEntry
-from main.customFunctions import getRandomPledgeForm #, prettydate
+
+
+# from django.core.paginator import Paginator
 # Create your views here.
-
-
 # def test(request):
 #   return render(request, 'main/test.html', { 'sumtest': get_summary(3) } )
-  
 def config(request):
     message = ""
     permitted = False
@@ -177,7 +179,19 @@ def ajax_retrieve_latest_entries(request):
     return HttpResponse(status=204)
 
 
+def deletePledgeEntry(request):
+        
+    entryid = int_or_0( request.GET.get('entryid') )
+    
+    p = PledgeEntry.objects.get(pk=entryid)
+    p.delete()    
 
+    if 'pledgeEntry' in request.META['HTTP_REFERER']:
+        return HttpResponseRedirect('/pledgeEntry/')
+    else:
+        return HttpResponseRedirect('/')
+
+    
 def editPledgeEntry(request):
   
     entries = PledgeEntry.objects.order_by('-id')[:20]  # [::-1]

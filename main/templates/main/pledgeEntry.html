@@ -5,14 +5,15 @@
 	<div class="row">
 		<div class="col-sm-6">
         {% if entryObject.id %}
-        <h3>Edit: ${{ entryObject.amount }} ({{ entryObject.singleormonthly|title }}) - {{ entryObject.lastname }}</h3>
-        <div id="pledgeFormContent">{% include 'main/pledgeEntryForm.html' %}
+        	<h3>Edit: ${{ entryObject.amount }} ({{ entryObject.singleormonthly|title }}) - {{ entryObject.lastname }}</h3>
+        	<div id="pledgeFormContent">
+        		{% include 'main/pledgeEntryForm.html' %}
         {% else %}
   			<h2>Pledge Entry</h2>
-        <div id="pledgeFormContent">{% include 'main/pledgeEntryForm.html' %}
-				<!--<a href="/pledgeEntry/?getrandom=True">Add Random</a>-->
+        	<div id="pledgeFormContent">
+        		{% include 'main/pledgeEntryForm.html' %}
   			
-  			{% endif %}
+  		{% endif %}
 
       </div>
     </div>
