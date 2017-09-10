@@ -4,15 +4,15 @@ from django.db import models
 
 
 class Summary(models.Model):
-  date = models.DateTimeField()
-  totalamount = models.DecimalField( max_digits=9, decimal_places=2 )
-  totalpledges = models.IntegerField()
-  newdonors_count = models.IntegerField()
-  newdonors_totaldollars = models.DecimalField( max_digits=9, decimal_places=2 )
-  monthlydonors_count = models.IntegerField()
-  monthlydonors_totaldollars = models.DecimalField( max_digits=9, decimal_places=2)
-  singledonors_count = models.IntegerField()
-  singledonors_totaldollars = models.DecimalField( max_digits=9, decimal_places=2)
+    date = models.DateTimeField()
+    totalamount = models.DecimalField( max_digits=9, decimal_places=2 )
+    totalpledges = models.IntegerField()
+    newdonors_count = models.IntegerField()
+    newdonors_totaldollars = models.DecimalField( max_digits=9, decimal_places=2 )
+    monthlydonors_count = models.IntegerField()
+    monthlydonors_totaldollars = models.DecimalField( max_digits=9, decimal_places=2)
+    singledonors_count = models.IntegerField()
+    singledonors_totaldollars = models.DecimalField( max_digits=9, decimal_places=2)
   
   
 

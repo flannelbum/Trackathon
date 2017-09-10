@@ -1,6 +1,6 @@
 from django import forms
 from main.models import PledgeEntry
-from django.forms.widgets import RadioSelect, TextInput, CheckboxInput
+from django.forms.widgets import TextInput, CheckboxInput #RadioSelect, 
 
 # class TestForm(forms.Form):
 
