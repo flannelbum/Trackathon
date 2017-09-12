@@ -1,8 +1,5 @@
-import csv
-import time
-
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.db.models import Sum
 from django.shortcuts import render  # , redirect
 
@@ -11,11 +8,13 @@ from main.forms import PledgeEntryForm
 from main.models import PledgeEntry
 
 
-# from django.core.paginator import Paginator
-# Create your views here.
-# def test(request):
-#   return render(request, 'main/test.html', { 'sumtest': get_summary(3) } )
- 
+# Helper function to return an integer for a given value (string)
+#  if none found, return 0
+def int_or_0(value):
+    try:
+        return int(value)
+    except:
+        return 0 
 
 def dashboard(request):
     try:
@@ -33,6 +32,7 @@ def config(request):
     permitted = False
     context = {}
     cfgpass = request.POST.get('cfgpw', None)
+    
     if cfgpass == settings.CONFIG_PASSWORD:
         permitted = True
         context['cfgpass'] = cfgpass
@@ -47,55 +47,14 @@ def config(request):
     context['permitted'] = permitted
     
     return render(request, 'main/config.html', context)
-  
-  
-  
-def csvExport(request):
-
-    cfgpw = request.POST.get('cfgpw')
-    # print(cfgpw)
-
-    if cfgpw == settings.CONFIG_PASSWORD:
-        filename = "TrackAThonExport_" + time.strftime("%m%d-%H%M%S") + ".csv"
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename=' + filename
-        
-        writer = csv.writer(response)
-        writer.writerow(['ID', 'DATEADDED', 'AMOUNT', 'FIRSTNAME', 'LASTNAME', 'CITY', 'FTD', 'PLEDGETYPE', 'STATION', 'PARISH', 'CALLOUT', 'COMMENT'])
-        
-        entries = PledgeEntry.objects.all()
-        for entry in entries:
-            # writer.writerow([ entry.id, entry.create_date.strftime("%Y-%m-%d %H:%m:%S"), entry.amount, entry.firstname, entry.lastname, entry.city, entry.ftdonor, entry.singleormonthly, entry.callsign, entry.parish, entry.groupcallout, entry.comment])
-            # # fix up the hour string for -4
-            myhour = entry.create_date.strftime("%H")
-            myhour = +int(myhour) - 4
-            timestr = entry.create_date.strftime("%Y/%m/%d ") + str(myhour) + ":" + entry.create_date.strftime("%M:%S")
-            writer.writerow([ entry.id, timestr, entry.amount, entry.firstname, entry.lastname, entry.city, entry.ftdonor, entry.singleormonthly, entry.callsign, entry.parish, entry.groupcallout, entry.comment])
-    else:
-    # Return silent/404 if blank GET request
-        return HttpResponse(status=404)
     
-    return response
-    writer = csv.writer(response)
-    writer.writerow(['ID','DATEADDED','AMOUNT','FIRSTNAME','LASTNAME','CITY','FTD','PLEDGETYPE','STATION','PARISH','CALLOUT','COMMENT'])
     
-    entries = PledgeEntry.objects.all()
-    for entry in entries:
-        # writer.writerow([ entry.id, entry.create_date.strftime("%Y-%m-%d %H:%m:%S"), entry.amount, entry.firstname, entry.lastname, entry.city, entry.ftdonor, entry.singleormonthly, entry.callsign, entry.parish, entry.groupcallout, entry.comment])
-        ## fix up the hour string for -4
-        myhour = entry.create_date.strftime("%H")
-        myhour =+ int(myhour) - 4
-        timestr = entry.create_date.strftime("%Y/%m/%d ") + str(myhour) + ":" + entry.create_date.strftime("%M:%S")
-        writer.writerow([ entry.id, timestr, entry.amount, entry.firstname, entry.lastname, entry.city, entry.ftdonor, entry.singleormonthly, entry.callsign, entry.parish, entry.groupcallout, entry.comment])
-    else:
-        # Return silent/404 if blank GET request
-        return HttpResponse(status=404)
-    
-    return response
-  
   
 def report(request):
+    
+    
     return render(request, 'main/report.html')
+  
   
   
 def get_summaryData(lid):
@@ -142,63 +101,9 @@ def get_summaryData(lid):
     return summaryData
 
   
-def ajax_get_summary(request):
-    latestid = PledgeEntry.objects.latest('id').id
-    context = get_summaryData(latestid)
-    return render(request, 'main/summary.html', context)
   
-  
-  
-def int_or_0(value):
-    try:
-        return int(value)
-    except:
-        return 0  
-
-
-
-def ajax_get_next_entries(request):
-    lid = int_or_0(request.GET.get('lid', None))
-    entries = PledgeEntry.objects.filter(id__lt=lid).order_by('-id')[:15]
-    return render(request, 'main/multiple_pledges.html', { 'entries': entries })
   
  
- 
-def ajax_thank_id(request):
-    thankedid = int_or_0(request.POST.get('thankedid', None))
-    if thankedid > 0:
-        p = PledgeEntry.objects.get(pk=thankedid)
-        p.beenthanked = True
-        p.save()
-    return HttpResponse(status=204)
- 
-
-  
-def ajax_retrieve_latest_entries(request):
-
-    lid = int_or_0(request.GET.get('lid', None))
-    latestid = PledgeEntry.objects.latest('id').id
-    maxbehind = 15  # Don't fetch more than this
-    behind = latestid - lid
-    
-    if lid == latestid:
-        return HttpResponse(status=204)
-    
-    if lid > latestid:
-        return HttpResponse("?lid= greater than actual latest id of " + str(latestid), status=400)
-    
-    if lid < 1:
-        return HttpResponse("?lid= must be greater than 0", status=400)
-    
-    if behind > maxbehind:
-        return HttpResponse("Too much to return.  ?lid= must currently be between " + str(latestid - maxbehind) + " - " + str(latestid), status=400)
-      
-    if latestid > lid:
-        entries = PledgeEntry.objects.order_by('-id')[:behind:1]
-        return render(request, 'main/multiple_pledges.html', { 'entries': entries })
-    
-    # # Should not make it this far but, just in case, stay quiet
-    return HttpResponse(status=204)
 
 
 
