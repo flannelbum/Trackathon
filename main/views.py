@@ -1,7 +1,11 @@
+import datetime
+import pytz
+
 from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.db.models import Sum
 from django.shortcuts import render  # , redirect
+from collections import OrderedDict
 
 from main.customFunctions import getRandomPledgeForm  # , prettydate
 from main.forms import PledgeEntryForm
@@ -52,8 +56,33 @@ def config(request):
   
 def report(request):
     
+    context = {}
+    daysummary = OrderedDict()
+    localtz = pytz.timezone( settings.TIME_ZONE ) # https://stackoverflow.com/questions/24710233/python-convert-time-to-utc-format
+    days = PledgeEntry.objects.datetimes('create_date', 'day', 'DESC', localtz) 
     
-    return render(request, 'main/report.html')
+    for day in days:
+        daysummary[day.date().__str__()] = PledgeEntry.objects.filter(create_date__date=datetime.datetime(day.year, day.month, day.day, 0,0, tzinfo=localtz)).count()
+    
+    context['days'] = daysummary
+        
+    
+    # Get a list of unique days and hours that have pledges
+#     startdate = datetime.today()
+#     enddate = startdate + timedelta(days=6)
+#     Sample.objects.filter(date__range=[startdate, enddate])
+# list = PledgeEntry.objects.filter(create_date__range=[])
+    
+    # returns all entries in the same our has a set entry: e
+#     e = PledgeEntry.objects.latest('id')
+#     hstart = datetime.datetime( e.create_date.year, e.create_date.month, e.create_date.day, e.create_date.hour, 0, 0, 0, e.create_date.tzinfo )
+#     hstop = datetime.datetime(hstart.year, hstart.month, hstart.day, hstart.hour, hstart.minute + 59, hstart.second + 59, hstart.microsecond + 999999, hstart.tzinfo)
+#     mylist = PledgeEntry.objects.filter(create_date__range=[hstart, hstop])
+#     mylist.count()
+    
+    
+    
+    return render(request, 'main/report.html', context)
   
   
   
