@@ -1,26 +1,64 @@
 {% extends 'main/index.html' %}
+{% load prepend_dollars %} 
 {% block title %}Report{% endblock %}
 {% block content %}
 <div class="container-fluid">
   <div class="row">
     <div class="col-sm-6">
         
-		<h2>report1</h2>
+		<h2>Daily Breakdown</h2>
 		<ul>
-			{% for day, count in days.items %}
-			<li>{{ day }} - {{ count }}</li>
-{#				<ul>#}
-{#				{% for a in entry %}#}
-{#				<li>{{ a }}</li>#}
-{#				{% endfor %}#}
-{#				</ul>#}
+			{% for day, entry in days.items %}
+			<li>{{ day }} </li>
+				<ul>
+				    <li>Pledges: {{ entry.summaryData.total_pledges }}</li>
+					<li>Dollars: {{ entry.summaryData.grand_total | prepend_dollars  }}</li>
+				    <li>First Time: {{ entry.summaryData.total_new_donors }} / {{ entry.summaryData.total_new_donor_dollars | prepend_dollars }}</li>
+				    <li>Monthly: {{ entry.summaryData.total_monthly_donors }} / {{ entry.summaryData.total_monthly_dollars | prepend_dollars }}</li>
+				    <li>Single: {{ entry.summaryData.total_single_donors }} / {{ entry.summaryData.total_single_dollars | prepend_dollars }}</li>
+				    <a href="/report/?label={{ entry.label }}">Hourly Detail</a>
+			    </ul>
+				<!-- {{ entry.lable }} data: -->
+				<!-- {{entry}} -->
+
 			{% endfor %} 
         </ul>
     </div>
     <div class="col-sm-6">
-
-      	<h2>report2</h2>
-      
+		{% if date %}
+      	<h2>Hourly Breakdown - {{ date }}</h2>
+      	<ul>
+      	{% for hour, entry in hourlyBreakdown.items %}
+      			<li>{{ hour }} </li>
+      			<ul>
+				    <li>Pledges: {{ entry.summaryData.total_pledges }}</li>
+					<li>Dollars: {{ entry.summaryData.grand_total | prepend_dollars  }}</li>
+				    <li>First Time: {{ entry.summaryData.total_new_donors }} / {{ entry.summaryData.total_new_donor_dollars | prepend_dollars }}</li>
+				    <li>Monthly: {{ entry.summaryData.total_monthly_donors }} / {{ entry.summaryData.total_monthly_dollars | prepend_dollars }}</li>
+				    <li>Single: {{ entry.summaryData.total_single_donors }} / {{ entry.summaryData.total_single_dollars | prepend_dollars }}</li>
+			    </ul>
+			    
+			    
+			    <ul id="{{ hour }}" class="list-group">
+			        <div class="container-fluid">
+			        	<div class="panel-group" id="accordion">
+			          
+			            {% with entries=entry.entries %}
+					    	{% include 'main/multiple_pledges.html' %}
+					    {% endwith %}
+			        
+			          	</div>
+			        </div>
+		      </ul>
+			    
+			    
+			    
+			    
+			    <!-- {{ hour }} data -->
+			    <!-- {{entry}} -->
+      	{% endfor %}
+      	</ul>
+      	{% endif %}
     </div>
   </div>
 </div>

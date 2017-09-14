@@ -1,11 +1,15 @@
+from collections import OrderedDict
+from datetime import tzinfo
 import datetime
-import pytz
+from itertools import chain
+import itertools
 
 from django.conf import settings
-from django.http import HttpResponseRedirect
 from django.db.models import Sum
+from django.db.models.query import QuerySet
+from django.http import HttpResponseRedirect
 from django.shortcuts import render  # , redirect
-from collections import OrderedDict
+import pytz
 
 from main.customFunctions import getRandomPledgeForm  # , prettydate
 from main.forms import PledgeEntryForm
@@ -22,8 +26,7 @@ def int_or_0(value):
 
 def dashboard(request):
     try:
-        latestid = PledgeEntry.objects.latest('id').id
-        context = get_summaryData(latestid)
+        context = get_summaryData( PledgeEntry.objects.all() )
         context['entries'] = PledgeEntry.objects.all().order_by('-id')[:15]
         return render(request, 'main/dashboard.html', context)
     except:
@@ -60,35 +63,58 @@ def report(request):
     daysummary = OrderedDict()
     localtz = pytz.timezone( settings.TIME_ZONE ) # https://stackoverflow.com/questions/24710233/python-convert-time-to-utc-format
     days = PledgeEntry.objects.datetimes('create_date', 'day', 'DESC', localtz) 
+       
+    label = request.GET.get('label', None)
     
     for day in days:
-        daysummary[day.date().__str__()] = PledgeEntry.objects.filter(create_date__date=datetime.datetime(day.year, day.month, day.day, 0,0, tzinfo=localtz)).count()
-    
-    context['days'] = daysummary
+        entries = PledgeEntry.objects.filter(create_date__date=datetime.datetime(day.year, day.month, day.day, 0,0, tzinfo=localtz))
+        count = entries.count()
         
-    
-    # Get a list of unique days and hours that have pledges
-#     startdate = datetime.today()
-#     enddate = startdate + timedelta(days=6)
-#     Sample.objects.filter(date__range=[startdate, enddate])
-# list = PledgeEntry.objects.filter(create_date__range=[])
-    
-    # returns all entries in the same our has a set entry: e
-#     e = PledgeEntry.objects.latest('id')
-#     hstart = datetime.datetime( e.create_date.year, e.create_date.month, e.create_date.day, e.create_date.hour, 0, 0, 0, e.create_date.tzinfo )
-#     hstop = datetime.datetime(hstart.year, hstart.month, hstart.day, hstart.hour, hstart.minute + 59, hstart.second + 59, hstart.microsecond + 999999, hstart.tzinfo)
-#     mylist = PledgeEntry.objects.filter(create_date__range=[hstart, hstop])
-#     mylist.count()
-    
-    
-    
+        if label == day.date().__str__():
+            context['date'] = datetime.date(day.year, day.month, day.day)
+            context['hourlyBreakdown'] = hourlyBreakdown(entries)
+                        
+        daysummary[day.date().__str__()] = {'label': day.date().__str__(), 'count': count, 'summaryData': get_summaryData(entries)}
+        context['days'] = daysummary
+        
     return render(request, 'main/report.html', context)
+   
+    
+    
+def date_hour(_datetime):
+    #09/14/17 05 PM
+    #return _datetime.strftime("%x %I %p")
+    #05:00 PM
+    _dt = _datetime.astimezone( pytz.timezone( settings.TIME_ZONE))
+    return _dt.strftime("%I:00 %p")    
+
+def hourlyBreakdown(entries):
+    hbd = OrderedDict()
+    
+    groups = itertools.groupby(entries, lambda x:date_hour( x.create_date)) 
+    #since groups is an iterator and not a list you have not yet traversed the list
+    for group,matches in groups: #now you are traversing the list ...
+#         print group,"TTL:",sum(1 for _ in matches)
+        hrlyids = []
+        count = 0
+        for entry in matches:
+            count = count + 1
+            hrlyids.append(entry.id)
+        qs = PledgeEntry.objects.filter(id__in=hrlyids)
+
+        hbd[group] = {'count': len(hrlyids), 'summaryData': get_summaryData(qs), 'entries': qs}
+         
+    return hbd
+    
   
   
-  
-def get_summaryData(lid):
+def get_summaryData(entries):
     latestid = PledgeEntry.objects.latest('id').id
-    entries = PledgeEntry.objects.all()
+    
+    if entries == None:
+        entries = PledgeEntry.objects.all()
+    
+#     print("get_summaryData for " + str(entries.count()) + " entries")
     
     grand_total = entries.aggregate(Sum('amount'))['amount__sum']
     total_pledges = entries.count()
@@ -124,8 +150,6 @@ def get_summaryData(lid):
         'total_single_donors': total_single_donors,
         'total_single_dollars': total_single_dollars,
     }
-    # else:
-        # print("returning cached summaryData")
       
     return summaryData
 
