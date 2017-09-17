@@ -136,7 +136,8 @@ def encode_entryIDs(entries):
     try:
         entryids = [str(entry.id) for entry in entries]
         entryidstring = ",".join(entryids) 
-        encodedentryidstring = urlsafe_b64encode(entryidstring)
+        
+        encodedentryidstring = urlsafe_b64encode(entryidstring.encode())
         return encodedentryidstring
     except:
         return None
@@ -144,7 +145,7 @@ def encode_entryIDs(entries):
 def decode_entryIDs(encodedstring):
     decodedentryidstring = urlsafe_b64decode(encodedstring.encode('ascii'))
     
-    idlist = decodedentryidstring.split(',')
+    idlist = decodedentryidstring.split(b',')
     testentries = PledgeEntry.objects.filter(id__in=idlist)
     return testentries
       
