@@ -2,7 +2,7 @@ from django.http.response import HttpResponse
 from django.shortcuts import render
 
 from main.models import PledgeEntry
-from main.views import dashboard, get_summaryData, int_or_0
+from main.views import int_or_0
 
 
 def ajax_get_next_entries(request):

@@ -1,50 +1,50 @@
-from base64 import urlsafe_b64encode, urlsafe_b64decode
 import calendar
-from collections import OrderedDict
 import datetime
 import itertools
+import pytz
+
+from base64 import urlsafe_b64encode, urlsafe_b64decode
+from collections import OrderedDict
 
 from django.conf import settings
 from django.db.models import Sum
 from django.http import HttpResponseRedirect
-from django.http.response import HttpResponse
-from django.shortcuts import render  # , redirect
-import pytz
+from django.shortcuts import render
 
-from main.customFunctions import getRandomPledgeForm, int_or_0  # , prettydate
+from main.customFunctions import getRandomPledgeForm, int_or_0
 from main.forms import PledgeEntryForm
 from main.models import PledgeEntry
 
 
 def dashboard(request):
-# try:
-    context = {}
-    context['overall_totals_summaryData'] = get_summaryData( PledgeEntry.objects.all(), "Overall Totals" )
+    try:
+        context = {}
+        context['overall_totals_summaryData'] = get_summaryData( PledgeEntry.objects.all(), "Overall Totals" )
+        
+        # get latest entry
+        latestentry = PledgeEntry.objects.all().latest('create_date')
+        
+        # get all entries in the same day as latest
+        day_entries = PledgeEntry.objects.filter(create_date__date=( latestentry.create_date ))
+        context['latest_day_summaryData'] = get_summaryData(day_entries, "Latest Day Totals")
+        
+        # all entires for the latest hour
+        latest_entries = get_entries_in_same_hour_as(latestentry)
+        context['latest_hour_summaryData'] = get_summaryData(latest_entries, "Latest Hour Totals") 
+        
+        # all entires for the previous hour
+        olderthan = datetime.datetime.combine( latestentry.create_date.date(), datetime.time( latestentry.create_date.hour -1, 59, 59, 999999, tzinfo=pytz.UTC))
     
-    # get latest entry
-    latestentry = PledgeEntry.objects.all().latest('create_date')
+        previous_entry = PledgeEntry.objects.filter(create_date__lte=olderthan).latest('create_date')
+        previous_entries = get_entries_in_same_hour_as(previous_entry)
+        context['previous_hour_summaryData'] = get_summaryData(previous_entries, "Previous Hour Totals")
+        
+        # initial entries context for the acccordian list
+        context['entries'] = PledgeEntry.objects.all().order_by('-id')[:15]
+        return render(request, 'main/dashboard.html', context)
     
-    # get all entries in the same day as latest
-    day_entries = PledgeEntry.objects.filter(create_date__date=( latestentry.create_date ))
-    context['latest_day_summaryData'] = get_summaryData(day_entries, "Latest Day Totals")
-    
-    # all entires for the latest hour
-    latest_entries = get_entries_in_same_hour_as(latestentry)
-    context['latest_hour_summaryData'] = get_summaryData(latest_entries, "Latest Hour Totals") 
-    
-    # all entires for the previous hour
-    olderthan = datetime.datetime.combine( latestentry.create_date.date(), datetime.time( latestentry.create_date.hour -1, 59, 59, 999999, tzinfo=pytz.UTC))
-
-    previous_entry = PledgeEntry.objects.filter(create_date__lte=olderthan).latest('create_date')
-    previous_entries = get_entries_in_same_hour_as(previous_entry)
-    context['previous_hour_summaryData'] = get_summaryData(previous_entries, "Previous Hour Totals")
-    
-    # initial entries context for the acccordian list
-    context['entries'] = PledgeEntry.objects.all().order_by('-id')[:15]
-    return render(request, 'main/dashboard.html', context)
-
-# except:
-#     return render(request, 'main/index.html', {})
+    except:
+        return render(request, 'main/index.html', {})
     
     
 
