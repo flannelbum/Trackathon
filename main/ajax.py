@@ -5,15 +5,6 @@ from main.models import PledgeEntry
 from main.views import dashboard, get_summaryData, int_or_0
 
 
-# def ajax_get_summary(request):
-#     latestid = PledgeEntry.objects.latest('id').id
-#     context = get_summaryData(latestid)
-#     return render(request, 'main/summary.html', context)
-  
-def ajax_get_summary(request):
-    return dashboard(request)
-    
-
 def ajax_get_next_entries(request):
     lid = int_or_0(request.GET.get('lid', None))
     entries = PledgeEntry.objects.filter(id__lt=lid).order_by('-id')[:15]
