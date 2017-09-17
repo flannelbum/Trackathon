@@ -1,14 +1,17 @@
 {% load prepend_dollars %} 
-    <div class="col-sm-4">
-      <h3>Sharathon Totals Overall:</h3>
-      <h4>Grand Total <strong>{{ grand_total | prepend_dollars  }}</strong></h4>
-      <h4>Total Pledges <strong>{{ total_pledges }}</strong></h4>
-      <h4>New Donors <strong>{{ total_new_donors }}</strong> / <strong>{{ total_new_donor_dollars | prepend_dollars }}</strong></h4>
-      <h4>Monthly Donors <strong>{{ total_monthly_donors }} </strong> / <strong>{{ total_monthly_dollars | prepend_dollars }}</strong></h4>
-      <h4>Single Donors <strong>{{ total_single_donors }} </strong> / <strong>{{ total_single_dollars | prepend_dollars }}</strong></h4>
-      
-    </div>
+{% if summaryData.label %}{{ summaryData.label }}{% endif %}
+<ul>
+	<li>Total Pledges <strong><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} - Total&{% endif %}list={{ summaryData.total_entries }}">{{ summaryData.total_pledges }} / {{ summaryData.total_dollars | prepend_dollars }}</a></strong></li>
+	<li>New Donors <strong><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} - by New Donors&{% endif %}list={{ summaryData.new_entries }}">{{ summaryData.new_donors }} / {{ summaryData.new_donor_dollars | prepend_dollars }}</a></strong></li>
+	<li>Monthly Donors <strong><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} - by Monthly Donors&{% endif %}list={{ summaryData.monthly_entries }}">{{ summaryData.monthly_donors }} / {{ summaryData.monthly_dollars | prepend_dollars }}</a></strong></li>
+	<li>Single Donors <strong><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} - by Single Donors&{% endif %}list={{ summaryData.single_entries }}">{{ summaryData.single_donors }} / {{ summaryData.single_dollars | prepend_dollars }}</a></strong></li>
+</ul>
 
+
+
+
+
+	{% if 1 == 2 %} {# hush station data, don't say a word. #}
     <div class="col-sm-4">
       
         <table class="table">
@@ -23,7 +26,7 @@
             </tr>
           </thead>
           <tbody>
-            {% for station in stations %}
+            {% for station in summaryData.stations %}
             <tr>
               <td>{{ station.callsign }}</td>
               <td>{{ station.total | prepend_dollars }}</td>
@@ -35,16 +38,14 @@
             {% endfor %}
             <tr>
               <td><strong>Totals:</strong></td>
-              <td><strong>{{ grand_total | prepend_dollars }}</strong></td>
-              <td><strong>{{ total_pledges }}</strong></td>
-              <td><strong>{{ total_new_donors }}</strong></td>
-              <td><strong>{{ total_monthly_donors }}</strong></td>
-              <td><strong>{{ total_single_donors }}</strong></td>
+              <td><strong>{{ summaryData.grand_total | prepend_dollars }}</strong></td>
+              <td><strong>{{ summaryData.total_pledges }}</strong></td>
+              <td><strong>{{ summaryData.total_new_donors }}</strong></td>
+              <td><strong>{{ summaryData.total_monthly_donors }}</strong></td>
+              <td><strong>{{ summaryData.total_single_donors }}</strong></td>
             </tr>
           </tbody>
         </table>
         
-      <!--</div>-->
-      
     </div>
-
+	{% endif %}

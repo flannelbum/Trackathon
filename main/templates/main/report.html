@@ -5,61 +5,28 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col-sm-6">
-        
+    
 		<h2>Daily Breakdown</h2>
-		<ul>
-			{% for day, entry in days.items %}
-			<li>{{ day }} - <a href="/report/?label={{ entry.label }}">Hourly Detail</a></li>
-				<ul>
-				    <li>Pledges: {{ entry.summaryData.total_pledges }}</li>
-					<li>Dollars: {{ entry.summaryData.grand_total | prepend_dollars  }}</li>
-				    <li>First Time: {{ entry.summaryData.total_new_donors }} / {{ entry.summaryData.total_new_donor_dollars | prepend_dollars }}</li>
-				    <li>Monthly: {{ entry.summaryData.total_monthly_donors }} / {{ entry.summaryData.total_monthly_dollars | prepend_dollars }}</li>
-				    <li>Single: {{ entry.summaryData.total_single_donors }} / {{ entry.summaryData.total_single_dollars | prepend_dollars }}</li>
-			    </ul>
-			    <br/>
-				<!-- {{ entry.lable }} data: -->
-				<!-- {{entry}} -->
-
+			{% for day, entry in daySummary.items %}
+				{% with summaryData=entry.summaryData %}
+					{% include 'main/summary.html' %}
+				{% endwith %}
+				<a href="/report/?dayDetail={{ entry.dayDetail }}">See Hourly Breakdown</a><br/><br/><br/>
 			{% endfor %} 
-        </ul>
         
     </div>
     <div class="col-sm-6">
+
 		{% if date %}
       	<h2>Hourly Breakdown - {{ date }}</h2>
-      	<ul>
-      	{% for hour, entry in hourlyBreakdown.items %}
-      			<li>{{ hour }} - <a href=#>View Entries</a></li>
-      			<ul>
-				    <li>Pledges: {{ entry.summaryData.total_pledges }}</li>
-					<li>Dollars: {{ entry.summaryData.grand_total | prepend_dollars  }}</li>
-				    <li>First Time: {{ entry.summaryData.total_new_donors }} / {{ entry.summaryData.total_new_donor_dollars | prepend_dollars }}</li>
-				    <li>Monthly: {{ entry.summaryData.total_monthly_donors }} / {{ entry.summaryData.total_monthly_dollars | prepend_dollars }}</li>
-				    <li>Single: {{ entry.summaryData.total_single_donors }} / {{ entry.summaryData.total_single_dollars | prepend_dollars }}</li>
-			    </ul>
-			    <br/>
-			    
-{#			    <ul id="{{ hour }}" class="list-group">#}
-{#			        <div class="container-fluid">#}
-{#			        	<div class="panel-group" id="accordion">#}
-			          
-{#			            {% with entries=entry.entries %}#}
-{#					    	{% include 'main/multiple_pledges.html' %}#}
-{#					    {% endwith %}#}
-			        
-{#			          	</div>#}
-{#			        </div>#}
-{#		      </ul>#}
-			    
-			    
-			    
-			    
-			    <!-- {{ hour }} data -->
-			    <!-- {{entry}} -->
-      	{% endfor %}
-      	</ul>
-      	{% endif %}
+	      	{% for hour, entry in hourlyBreakdown.items %}
+	      		{% with summaryData=entry.summaryData %}
+	      			{% include 'main/summary.html' %}
+	      		{% endwith %}
+
+	      	{% endfor %}	
+	  	{% endif %}	
+
     </div>
   </div>
 </div>

@@ -1,0 +1,13 @@
+{% extends 'main/index.html' %}
+{% block title %}Entry List Detail - {% if label %}{{ label }}{% endif %}{% endblock %}
+{% block content %}
+<!-- START Entry listing -->
+{% if label %}<h1>{{ label }}</h1>{% endif %}
+<div class="container-fluid">
+	<div style="visibility:hidden" id="latestid">{{ latestid }}</div>
+ 	<div class="panel-group" id="accordion">
+  		{% include 'main/multiple_pledges.html' %}
+	 </div>
+</div>
+<!--END Entry listing  -->
+{% endblock %}

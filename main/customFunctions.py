@@ -4,6 +4,15 @@ from django.conf import settings
 from main.forms import PledgeEntryForm
 
 
+def int_or_0(value):
+    # Helper function to return an integer for a given value (string)
+    #  if none found, return 0
+    try:
+        return int(value)
+    except:
+        return 0 
+
+
 def getRandomPledgeForm():
     # http://stackoverflow.com/questions/3540288/how-do-i-read-a-random-line-from-one-file-in-python
     # firstname,lastname,city,ftdonor,beenthanked,amount,singleormonthly,callsign,parish,groupcallout,comment

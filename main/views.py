@@ -1,38 +1,57 @@
+from base64 import urlsafe_b64encode, urlsafe_b64decode
+import calendar
 from collections import OrderedDict
-from datetime import tzinfo
 import datetime
-from itertools import chain
 import itertools
 
 from django.conf import settings
 from django.db.models import Sum
-from django.db.models.query import QuerySet
 from django.http import HttpResponseRedirect
+from django.http.response import HttpResponse
 from django.shortcuts import render  # , redirect
 import pytz
 
-from main.customFunctions import getRandomPledgeForm  # , prettydate
+from main.customFunctions import getRandomPledgeForm, int_or_0  # , prettydate
 from main.forms import PledgeEntryForm
 from main.models import PledgeEntry
 
 
-# Helper function to return an integer for a given value (string)
-#  if none found, return 0
-def int_or_0(value):
-    try:
-        return int(value)
-    except:
-        return 0 
-
 def dashboard(request):
-    try:
-        context = get_summaryData( PledgeEntry.objects.all() )
-        context['entries'] = PledgeEntry.objects.all().order_by('-id')[:15]
-        return render(request, 'main/dashboard.html', context)
-    except:
-        return render(request, 'main/index.html', {})
-  
-  
+# try:
+    context = {}
+    context['overall_totals_summaryData'] = get_summaryData( PledgeEntry.objects.all(), "Overall Totals" )
+    
+    # get latest entry
+    latestentry = PledgeEntry.objects.all().latest('create_date')
+    
+    # get all entries in the same day as latest
+    day_entries = PledgeEntry.objects.filter(create_date__date=( latestentry.create_date ))
+    context['latest_day_summaryData'] = get_summaryData(day_entries, "Latest Day Totals")
+    
+    # all entires for the latest hour
+    latest_entries = get_entries_in_same_hour_as(latestentry)
+    context['latest_hour_summaryData'] = get_summaryData(latest_entries, "Latest Hour Totals") 
+    
+    # all entires for the previous hour
+    olderthan = datetime.datetime.combine( latestentry.create_date.date(), datetime.time( latestentry.create_date.hour -1, 59, 59, 999999, tzinfo=pytz.UTC))
+
+    previous_entry = PledgeEntry.objects.filter(create_date__lte=olderthan).latest('create_date')
+    previous_entries = get_entries_in_same_hour_as(previous_entry)
+    context['previous_hour_summaryData'] = get_summaryData(previous_entries, "Previous Hour Totals")
+    
+    # initial entries context for the acccordian list
+    context['entries'] = PledgeEntry.objects.all().order_by('-id')[:15]
+    return render(request, 'main/dashboard.html', context)
+
+# except:
+#     return render(request, 'main/index.html', {})
+    
+    
+
+def get_entries_in_same_hour_as(entry):
+    starttime = datetime.datetime.combine( entry.create_date.date(), datetime.time( entry.create_date.hour, 0, 0, 0, tzinfo=pytz.UTC))
+    endtime = datetime.datetime.combine( starttime.date(), datetime.time( starttime.hour, 59, 59, 999999, tzinfo=pytz.UTC))
+    return PledgeEntry.objects.filter(create_date__range=( starttime, endtime ))
   
 def config(request):
     message = ""
@@ -46,7 +65,7 @@ def config(request):
     else:
         permitted = False
         if request.method == 'GET':
-            message += "Please enter the config passowrd"
+            message += "Please enter the config password"
         else:
             message += "Invalid Password"
     
@@ -60,22 +79,23 @@ def config(request):
 def report(request):
     
     context = {}
-    daysummary = OrderedDict()
+    daySummary = OrderedDict()
     localtz = pytz.timezone( settings.TIME_ZONE ) # https://stackoverflow.com/questions/24710233/python-convert-time-to-utc-format
     days = PledgeEntry.objects.datetimes('create_date', 'day', 'DESC', localtz) 
        
-    label = request.GET.get('label', None)
+    dayDetail = request.GET.get('dayDetail', None)
     
-    for day in days:
+    for day in days:       
+        label = calendar.day_name[day.weekday()] + ", " + str(day.month) + "/" + str(day.day) + "/" + str(day.year)
         entries = PledgeEntry.objects.filter(create_date__date=datetime.datetime(day.year, day.month, day.day, 0,0, tzinfo=localtz))
         count = entries.count()
         
-        if label == day.date().__str__():
+        if dayDetail == day.date().__str__():
             context['date'] = datetime.date(day.year, day.month, day.day)
             context['hourlyBreakdown'] = hourlyBreakdown(entries)
                         
-        daysummary[day.date().__str__()] = {'label': day.date().__str__(), 'count': count, 'summaryData': get_summaryData(entries)}
-        context['days'] = daysummary
+        daySummary[day.date().__str__()] = {'dayDetail': day.date().__str__(), 'label': label, 'count': count, 'summaryData': get_summaryData(entries, label)}
+        context['daySummary'] = daySummary
         
     return render(request, 'main/report.html', context)
    
@@ -101,29 +121,58 @@ def hourlyBreakdown(entries):
             count = count + 1
             hrlyids.append(entry.id)
         qs = PledgeEntry.objects.filter(id__in=hrlyids)
+        
+        createdate = entry.create_date
+        timestring = createdate.astimezone( pytz.timezone( settings.TIME_ZONE ))
+        
+        label = group + " Breakdown for " + timestring.strftime("%b %d, %Y") 
 
-        hbd[group] = {'count': len(hrlyids), 'summaryData': get_summaryData(qs), 'entries': qs}
+        hbd[group] = {'count': len(hrlyids), 'summaryData': get_summaryData(qs, label), 'entries': qs}
          
     return hbd
     
   
+def encode_entryIDs(entries):
+    try:
+        entryids = [str(entry.id) for entry in entries]
+        entryidstring = ",".join(entryids) 
+        encodedentryidstring = urlsafe_b64encode(entryidstring)
+        return encodedentryidstring
+    except:
+        return None
   
-def get_summaryData(entries):
+def decode_entryIDs(encodedstring):
+    decodedentryidstring = urlsafe_b64decode(encodedstring.encode('ascii'))
+    
+    idlist = decodedentryidstring.split(',')
+    testentries = PledgeEntry.objects.filter(id__in=idlist)
+    return testentries
+      
+  
+def get_summaryData(entries, label):
     latestid = PledgeEntry.objects.latest('id').id
     
     if entries == None:
         entries = PledgeEntry.objects.all()
     
-#     print("get_summaryData for " + str(entries.count()) + " entries")
-    
-    grand_total = entries.aggregate(Sum('amount'))['amount__sum']
+    total_entries = encode_entryIDs(entries)
+    total_dollars = entries.aggregate(Sum('amount'))['amount__sum']
     total_pledges = entries.count()
-    total_new_donors = entries.filter(ftdonor__exact=True).count()
-    total_new_donor_dollars = entries.filter(ftdonor__exact=True).aggregate(Sum('amount'))['amount__sum']
-    total_monthly_donors = entries.filter(singleormonthly__exact="monthly").count()
-    total_monthly_dollars = entries.filter(singleormonthly__exact="monthly").aggregate(Sum('amount'))['amount__sum']
-    total_single_donors = entries.filter(singleormonthly__exact="single").count()
-    total_single_dollars = entries.filter(singleormonthly__exact="single").aggregate(Sum('amount'))['amount__sum']
+    
+    nd_entries = entries.filter(ftdonor__exact=True)
+    new_entries = encode_entryIDs(nd_entries)
+    new_donors = nd_entries.count()
+    new_donor_dollars = nd_entries.aggregate(Sum('amount'))['amount__sum']
+    
+    md_entries = entries.filter(singleormonthly__exact="monthly")
+    monthly_entries = encode_entryIDs(md_entries)
+    monthly_donors = md_entries.count()
+    monthly_dollars = md_entries.aggregate(Sum('amount'))['amount__sum']
+    
+    sd_entries = entries.filter(singleormonthly__exact="single")
+    single_entries = encode_entryIDs(sd_entries)
+    single_donors = sd_entries.count()
+    single_dollars = sd_entries.aggregate(Sum('amount'))['amount__sum']
     
     # ## Possible MySQL snip to prevent the read from locking
     # SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED ;
@@ -139,26 +188,31 @@ def get_summaryData(entries):
     stations = PledgeEntry.objects.raw(sql)
     
     summaryData = {
+        'label': label,
         'latestid': latestid,
         'stations': stations,
-        'grand_total': grand_total,
+        'total_entries': total_entries,
+        'total_dollars': total_dollars,
         'total_pledges': total_pledges,
-        'total_new_donors': total_new_donors,
-        'total_new_donor_dollars': total_new_donor_dollars,
-        'total_monthly_donors': total_monthly_donors,
-        'total_monthly_dollars': total_monthly_dollars,
-        'total_single_donors': total_single_donors,
-        'total_single_dollars': total_single_dollars,
+        'new_entries': new_entries,
+        'new_donors': new_donors,
+        'new_donor_dollars': new_donor_dollars,
+        'monthly_entries': monthly_entries,
+        'monthly_donors': monthly_donors,
+        'monthly_dollars': monthly_dollars,
+        'single_entries': single_entries,
+        'single_donors': single_donors,
+        'single_dollars': single_dollars,
     }
       
     return summaryData
 
   
+def entryListDetail(request):
+    entries = decode_entryIDs(request.GET.get('list'))
+    label = request.GET.get('label')
+    return render(request, 'main/entryListDetail.html', { 'label': label, 'entries': entries })
   
-  
- 
-
-
 
 def deletePledgeEntry(request):
         

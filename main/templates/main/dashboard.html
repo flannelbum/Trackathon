@@ -1,35 +1,48 @@
 {% extends 'main/index.html' %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-  {% csrf_token %}
-  <div id="sticky-anchor"></div>
-  <div id="sticky" class="container sticky" style="box-shadow: 0px 5px 5px #888888">
-    <a id="hs_totals" href="#collapse" data-toggle="collapse">Hide Totals</a>
-    <div class="row collapse in" id="collapse">
-      <div id="summary">
-        {% include 'main/summary.html' %}
-      </div>
-    </div>
-    <!-- New stuff could go here -->
-  </div>
+	{% csrf_token %}
+	<div id="sticky-anchor"></div>
+	<div id="sticky" class="container sticky" style="box-shadow: 0px 5px 5px #888888">
+	
+		<a id="hs_totals" href="#collapse" data-toggle="collapse">Hide Totals</a>
+		<div class="row collapse in" id="collapse">
+        	<div id="summary">
+	        	<div class="col-md-3">
+					<div id="summary_day">
+						{% with summaryData=latest_day_summaryData %}
+							{% include 'main/summary.html' %}
+						{% endwith %}
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div id="summary_latest">
+						{% with summaryData=latest_hour_summaryData %}
+							{% include 'main/summary.html' %}
+						{% endwith %}
+					</div>
+				</div>
+				<div class="col-md-3">
+					<div id="summary_previous">
+						{% with summaryData=previous_hour_summaryData %}
+							{% include 'main/summary.html' %}
+						{% endwith %}
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- New stuff could go here -->
+	</div>
 
-<!-- START Entry listing -->
-<div class="container-fluid">
-  <div style="visibility:hidden" id="latestid">{{ latestid }}</div>
-  <div class="panel-group" id="accordion">
-  
-    {% include 'main/multiple_pledges.html' %}
-
-  </div>
-
-  <center>
-    <div id="spinner">
-      <img src="/static/main/ajax-loader.gif" />
-    </div>
-  </center>
-
-</div>
-<!--END Entry listing  -->
+	<!-- START Entry listing -->
+	<div class="container-fluid">
+		<div style="visibility:hidden" id="latestid">{{ latestid }}</div>
+		<div class="panel-group" id="accordion">
+			{% include 'main/multiple_pledges.html' %}
+		</div>
+		<div id="spinner"><img src="/static/main/ajax-loader.gif" /></div>
+	</div>
+	<!--END Entry listing  -->
 
 
 
@@ -123,9 +136,10 @@ function updateEntries(){
       
       $newbies.removeClass("new");
       
-      $.get('/ajax_get_summary/', { }, function(summarydata){
-        $("#summary").replaceWith('<div id="summary">' + summarydata + '</div>');
-      });
+		$.get('/', function (response) {
+			var source = $(''+response+'');
+			$('#summary').html(source.find('#summary').html());
+			});
       
       data.show('normal');
     }
