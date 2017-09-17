@@ -122,7 +122,10 @@ class PledgeEntryForm(forms.Form):
         return self.cleaned_data['groupcallout'].upper()
     
     
-    tags = TagField( widget=TagAutocomplete() )
+    tags = TagField( 
+        required=False,
+        widget=TagAutocomplete(
+            attrs={'autocomplete':'off'}) )
     def clean_tags(self):
         return self.cleaned_data['tags']
         
