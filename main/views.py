@@ -2,7 +2,6 @@ import calendar
 import datetime
 import itertools
 import pytz
-
 from base64 import urlsafe_b64encode, urlsafe_b64decode
 from collections import OrderedDict
 
@@ -10,6 +9,7 @@ from django.conf import settings
 from django.db.models import Sum
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from tagging.models import Tag, TaggedItem
 
 from main.customFunctions import getRandomPledgeForm, int_or_0
 from main.forms import PledgeEntryForm
@@ -23,6 +23,7 @@ def dashboard(request):
         
         # get latest entry
         latestentry = PledgeEntry.objects.all().latest('create_date')
+        context['lid'] = latestentry.id
         
         # get all entries in the same day as latest
         day_entries = PledgeEntry.objects.filter(create_date__date=( latestentry.create_date ))
@@ -34,10 +35,14 @@ def dashboard(request):
         
         # all entires for the previous hour
         olderthan = datetime.datetime.combine( latestentry.create_date.date(), datetime.time( latestentry.create_date.hour -1, 59, 59, 999999, tzinfo=pytz.UTC))
-    
-        previous_entry = PledgeEntry.objects.filter(create_date__lte=olderthan).latest('create_date')
-        previous_entries = get_entries_in_same_hour_as(previous_entry)
-        context['previous_hour_summaryData'] = get_summaryData(previous_entries, "Previous Hour Totals")
+        
+        # prevent exception when we're in our first hour
+        try:
+            previous_entry = PledgeEntry.objects.filter(create_date__lte=olderthan).latest('create_date')
+            previous_entries = get_entries_in_same_hour_as(previous_entry)
+            context['previous_hour_summaryData'] = get_summaryData(previous_entries, "Previous Hour Totals")
+        except PledgeEntry.DoesNotExist:
+            pass
         
         # initial entries context for the acccordian list
         context['entries'] = PledgeEntry.objects.all().order_by('-id')[:15]
@@ -150,6 +155,18 @@ def decode_entryIDs(encodedstring):
     return testentries
       
   
+def get_taglist(entries):
+    taglist = OrderedDict()
+    
+    tags = Tag.objects.usage_for_queryset(entries, counts=True, min_count=None)
+    tags.sort(key=lambda x: x.count, reverse=True)
+    for tag in tags:
+        tagged = TaggedItem.objects.get_by_model(entries, tag)
+        taglist[tag.count.__str__() + "-" + tag.name] = tag.name, tagged.aggregate(Sum('amount'))['amount__sum'], encode_entryIDs(tagged)
+            
+    return taglist
+
+
 def get_summaryData(entries, label):
     latestid = PledgeEntry.objects.latest('id').id
     
@@ -175,6 +192,9 @@ def get_summaryData(entries, label):
     single_donors = sd_entries.count()
     single_dollars = sd_entries.aggregate(Sum('amount'))['amount__sum']
     
+    tags = get_taglist(entries)
+    
+        
     # ## Possible MySQL snip to prevent the read from locking
     # SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED ;
     # SELECT * FROM TABLE_NAME ;
@@ -204,6 +224,7 @@ def get_summaryData(entries, label):
         'single_entries': single_entries,
         'single_donors': single_donors,
         'single_dollars': single_dollars,
+        'tags': tags,
     }
       
     return summaryData
@@ -243,6 +264,7 @@ def editPledgeEntry(request):
     if request.method == "POST":
         form = PledgeEntryForm(request.POST or None)
         if form.is_valid():
+                        
             p.firstname = form.cleaned_data['firstname']
             p.lastname = form.cleaned_data['lastname']
             p.city = form.cleaned_data['city']
@@ -252,12 +274,17 @@ def editPledgeEntry(request):
             p.callsign = form.cleaned_data['callsign']
             p.parish = form.cleaned_data['parish']
             p.groupcallout = form.cleaned_data['groupcallout']
+            p.tags = form.cleaned_data['tags']
             p.comment = form.cleaned_data['comment']
             p.save()
             form = PledgeEntryForm(None)
             return HttpResponseRedirect('/pledgeEntry/')
       
     else:
+        
+        taglist = list(p.tags.values_list('name', flat=True))
+        tags = ", ".join(taglist) 
+        
         form = PledgeEntryForm(None)
         form.fields["firstname"].initial = p.firstname
         form.fields["lastname"].initial = p.lastname
@@ -268,6 +295,7 @@ def editPledgeEntry(request):
         form.fields["callsign"].initial = p.callsign
         form.fields["parish"].initial = p.parish
         form.fields["groupcallout"].initial = p.groupcallout
+        form.fields["tags"].initial = tags
         form.fields["comment"].initial = p.comment
     
     return render(request, 'main/pledgeEntry.html', { 'form': form, 'entryid': entryid, 'entryObject': p, 'entries': entries })
@@ -296,9 +324,12 @@ def pledgeEntry(request):
             groupcallout=form.cleaned_data['groupcallout'],
             comment=form.cleaned_data['comment'],
             )
-        
-        print(entry.firstname)
+
+        # tags are special.  Have to have an entry before we can tag it.
         entry.save()
+        entry.tags = form.cleaned_data['tags']
+        entry.save()
+        
         form = PledgeEntryForm(None)
         entries = PledgeEntry.objects.order_by('-id')[:20]  # [::-1]
         return HttpResponseRedirect('/pledgeEntry/')

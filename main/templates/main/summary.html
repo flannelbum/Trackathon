@@ -6,12 +6,14 @@
 	<li>Monthly Donors <strong><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} - by Monthly Donors&{% endif %}list={{ summaryData.monthly_entries }}">{{ summaryData.monthly_donors }} / {{ summaryData.monthly_dollars | prepend_dollars }}</a></strong></li>
 	<li>Single Donors <strong><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} - by Single Donors&{% endif %}list={{ summaryData.single_entries }}">{{ summaryData.single_donors }} / {{ summaryData.single_dollars | prepend_dollars }}</a></strong></li>
 </ul>
+<div class="tags"> 
+{%for tag, tagdata in summaryData.tags.items %}
+	<div class="tag" title="{{ tag }}: {{ tagdata.1 | prepend_dollars }}"><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} - tagged with {{ tagdata.0 }}&{% endif %}list={{ tagdata.2 }}">{{ tag }}</a></div>
+{% endfor %}
+</div>
 
 
-
-
-
-	{% if 1 == 2 %} {# hush station data, don't say a word. #}
+	{% if 1 == 2 %} {# hush station data, don't say a word. 
     <div class="col-sm-4">
       
         <table class="table">
@@ -49,3 +51,19 @@
         
     </div>
 	{% endif %}
+	
+{% block style %}
+<style>
+.tags{
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-start;
+	position: relative;
+	top: -10px;      
+}
+.tag{
+	padding-left: 5px;
+	padding-right: 5px;
+}
+</style>
+{% endblock %}

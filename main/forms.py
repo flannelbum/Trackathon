@@ -1,9 +1,12 @@
 from django import forms
+from django.forms.widgets import TextInput, CheckboxInput
+from tagging.forms import TagField
+from tagging_autocomplete.widgets import TagAutocomplete
+
 from main.models import PledgeEntry
-from django.forms.widgets import TextInput, CheckboxInput #RadioSelect, 
+
 
 # class TestForm(forms.Form):
-
 class PledgeEntryForm(forms.Form):
 
     firstname = forms.CharField(
@@ -117,9 +120,13 @@ class PledgeEntryForm(forms.Form):
     )
     def clean_groupcallout(self):
         return self.cleaned_data['groupcallout'].upper()
-
-
-
+    
+    
+    tags = TagField( widget=TagAutocomplete() )
+    def clean_tags(self):
+        return self.cleaned_data['tags']
+        
+    
     comment = forms.CharField(
         required=False,
         widget=forms.Textarea(

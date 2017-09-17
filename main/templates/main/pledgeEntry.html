@@ -8,48 +8,47 @@
         	<h3>Edit: ${{ entryObject.amount }} ({{ entryObject.singleormonthly|title }}) - {{ entryObject.lastname }}</h3>
         	<div id="pledgeFormContent">
         		{% include 'main/pledgeEntryForm.html' %}
+        	</div>
         {% else %}
   			<h2>Pledge Entry</h2>
         	<div id="pledgeFormContent">
         		{% include 'main/pledgeEntryForm.html' %}
-  			
+  			</div>
   		{% endif %}
+		</div>
+	</div>
+</div>
 
-      </div>
-    </div>
-    <div class="col-sm-6">
 
-      <h2>Recent Entries</h2>
-      <ul id="recenEntries" class="list-group">
-        
-        <div class="container-fluid">
-          <div style="visibility:hidden" id="latestid">{{ latestid }}</div>
-          <div class="panel-group" id="accordion">
-          
-            {% include 'main/multiple_pledges.html' %}
-        
-          </div>
-        
-        </div>
-      </ul>
-    </div>
-  </div>
+
+<div class="col-sm-6">
+	<h2>Recent Entries</h2>
+	<ul id="recenEntries" class="list-group">
+		<div class="container-fluid">
+			<div style="visibility:hidden" id="latestid">{{ latestid }}</div>
+			<div class="panel-group" id="accordion">
+				{% include 'main/multiple_pledges.html' %}
+			</div>
+		</div>
+	</ul>
 </div>
 {% endblock %}
 
 {% block javascript %}
 <script type="text/javascript">
 $(document).ready(function() {
-  $(".hoverclick").click(function(){
-    $(this).stop().fadeOut(10).fadeIn(500);
-  });
-  $(".hoverclick").mouseenter(function(){
-    $(this).fadeOut(100);
-    $(this).fadeIn(100);
-  },null);
+	$(".hoverclick").click(function(){
+		$(this).stop().fadeOut(10).fadeIn(500);
+	});
+	$(".hoverclick").mouseenter(function(){
+		$(this).fadeOut(100);
+	    $(this).fadeIn(100);
+	},null);
 });
 
 $('.panel-group input[type=checkbox]').attr('disabled','true');
+
+
 
 </script>
 {% endblock %}

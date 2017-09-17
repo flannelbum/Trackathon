@@ -1,8 +1,10 @@
 from django.conf.urls import url
 
-from . import views
-from . import csvExport
+
 from . import ajax
+from . import csvExport
+from . import views
+
 
 urlpatterns = [
     url(r'^$', views.dashboard, name='dashboard'),
@@ -16,6 +18,7 @@ urlpatterns = [
     url(r'^editPledgeEntry/$', views.editPledgeEntry, name='editPledgeEntry'),
     url(r'^csvExport/$', csvExport.csvExport, name='csvExport'),
     url(r'^config/$', views.config, name='config'),
+#     url(r'^list$', list_tags, name='tagging_autocomplete-list'),
     # url(r'^test/$', views.test, name='test'),
 ]
 # 

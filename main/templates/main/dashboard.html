@@ -22,6 +22,7 @@
 						{% endwith %}
 					</div>
 				</div>
+				{% if previous_hour_summaryData %}
 				<div class="col-md-3">
 					<div id="summary_previous">
 						{% with summaryData=previous_hour_summaryData %}
@@ -29,6 +30,7 @@
 						{% endwith %}
 					</div>
 				</div>
+				{% endif %}
 			</div>
 		</div>
 		<!-- New stuff could go here -->
@@ -36,11 +38,11 @@
 
 	<!-- START Entry listing -->
 	<div class="container-fluid">
-		<div style="visibility:hidden" id="latestid">{{ latestid }}</div>
 		<div class="panel-group" id="accordion">
 			{% include 'main/multiple_pledges.html' %}
 		</div>
 		<div id="spinner"><img src="/static/main/ajax-loader.gif" /></div>
+		<div style="visibility:hidden" id="latestid">{{ latestid }}</div>
 	</div>
 	<!--END Entry listing  -->
 
@@ -101,7 +103,6 @@ function getLid2(){
 // runs every 3 seconds to check for new entries
 function updateEntries(){
   //update list of entries
-
   $.get('/ajax_retrieve_latest_entries/', { 'lid':getLid(), }, function(rawdata, status) {
     if (status == 'success' ) {
       
@@ -287,6 +288,10 @@ $(document).ready(function() {
     margin-left: auto;
 }
 
+.panel-group {
+	margin-top: 30px;
+}
+
 .list-group-item {
     position: relative;
     display: block;
@@ -325,7 +330,6 @@ $(document).ready(function() {
 input[type="checkbox"] {
   transform:scale(2, 2);
 }
-
 
 </style>
 {% endblock %}
