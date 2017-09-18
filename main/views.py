@@ -34,8 +34,12 @@ def dashboard(request):
         context['latest_hour_summaryData'] = get_summaryData(latest_entries, "Latest Hour Totals") 
         
         # all entires for the previous hour
-        olderthan = datetime.datetime.combine( latestentry.create_date.date(), datetime.time( latestentry.create_date.hour -1, 59, 59, 999999, tzinfo=pytz.UTC))
         
+        if latestentry.create_date.hour > 0:
+            olderthan = datetime.datetime.combine( latestentry.create_date.date(), datetime.time( latestentry.create_date.hour -1, 59, 59, 999999, tzinfo=pytz.UTC))
+        else:
+            olderthan = datetime.datetime.combine( latestentry.create_date.date(), datetime.time( 23, 59, 59, 999999, tzinfo=pytz.UTC))
+            
         # prevent exception when we're in our first hour
         try:
             previous_entry = PledgeEntry.objects.filter(create_date__lte=olderthan).latest('create_date')
