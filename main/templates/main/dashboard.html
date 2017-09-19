@@ -1,24 +1,24 @@
 {% extends 'main/index.html' %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-	{% csrf_token %}
+{% csrf_token %}
+<div class="container-fluid">
 	<div id="sticky-anchor"></div>
-	<div id="sticky" class="container sticky" style="box-shadow: 0px 5px 5px #888888">
-	
+	<div id="sticky" class="container sticky">
 		<a id="hs_totals" href="#collapse" data-toggle="collapse">Hide Totals</a>
 		<div class="row collapse in" id="collapse">
-        	<div id="summary">
-	        	<div class="col-md-3">
+			<div id="summary">
+				<div class="col-md-3">
 					<div id="summary_day">
 						{% with summaryData=latest_day_summaryData %}
-							{% include 'main/summary.html' %}
+						{% include 'main/summary.html' %}
 						{% endwith %}
 					</div>
 				</div>
 				<div class="col-md-3">
 					<div id="summary_latest">
 						{% with summaryData=latest_hour_summaryData %}
-							{% include 'main/summary.html' %}
+						{% include 'main/summary.html' %}
 						{% endwith %}
 					</div>
 				</div>
@@ -26,310 +26,26 @@
 				<div class="col-md-3">
 					<div id="summary_previous">
 						{% with summaryData=previous_hour_summaryData %}
-							{% include 'main/summary.html' %}
+						{% include 'main/summary.html' %}
 						{% endwith %}
 					</div>
 				</div>
 				{% endif %}
 			</div>
 		</div>
-		<!-- New stuff could go here -->
 	</div>
-
-	<!-- START Entry listing -->
-	<div class="container-fluid">
-		<div class="panel-group" id="accordion">
-			{% include 'main/multiple_pledges.html' %}
-		</div>
-		<div id="spinner"><img src="/static/main/ajax-loader.gif" /></div>
-		<div style="visibility:hidden" id="latestid">{{ latestid }}</div>
+	<div class="panel-group" id="accordion">
+		{% include 'main/multiple_pledges.html' %}
 	</div>
-	<!--END Entry listing  -->
-
-
-
+	<div id="spinner"><img src="/static/main/ajax-loader.gif" /></div>
+	<div style="visibility:hidden" id="latestid">{{ latestid }}</div>
+</div>
 {% endblock %}
-
 
 {% block javascript %}
-<script type="text/javascript">
-
-
-// returns the greatest panel-collapse id number on the page
-function getLid(){
-  
-  var lid = $("#latestid").text();
-  // create an array
-  var ar = new Array();
-  // for each element with id that starts with 'id'
-  $('.panel-collapse').each(
-    function(){
-      // add it to the array (only its numeric part)
-      ar.push(
-        // extract the numeric part to be added in the array
-        parseInt( $(this).attr('id').replace('id','') )
-      );
-  });
-  // find the max value in the array
-  pagelid = Math.max.apply(Math, ar);
-  
-  if (pagelid > lid){
-    $("#latestid").text(pagelid);
-    return pagelid;
-  } else {
-    return lid;
-  };
-}
-
-function getLid2(){
-  
-  // create an array
-  var ar = new Array();
-  // for each element with id that starts with 'id'
-  $('.panel-collapse').each(
-    function(){
-      // add it to the array (only its numeric part)
-      ar.push(
-        // extract the numeric part to be added in the array
-        parseInt( $(this).attr('id').replace('id','') )
-      );
-  });
-  // find the max value in the array
-  pagelid = Math.min.apply(Math, ar);
-  return pagelid;
-}
-
-
-// runs every 3 seconds to check for new entries
-function updateEntries(){
-  //update list of entries
-  $.get('/ajax_retrieve_latest_entries/', { 'lid':getLid(), }, function(rawdata, status) {
-    if (status == 'success' ) {
-      
-      var data = $(rawdata).hide();
-      $(data).find(".hoverclick").addClass("new");
-
-      $("#accordion").prepend(data);
-  
-      var $newbies = $(".new");
-      
-      
-      $newbies.click(function(event){
-        $(this).stop().fadeOut(10).fadeIn(500);
-      });
-      
-      
-      $newbies.mouseenter(function(){
-        $(this).fadeOut(100);
-        $(this).fadeIn(100);
-      },null);
-      
-      var $thankbox = $(data).find(".thankbox");
-      
-      $thankbox.click(function(event){
-        var id = $(this).closest('.panel-collapse').prop('id')
-        var csrf = $("input[name='csrfmiddlewaretoken'").attr('value');
-        $(this).closest(".panel-collapse").parent().find('.glyphicon-alert').remove();
-        $(this).attr("disabled", true);
-        $.post("/ajax_thank_id/", { 'thankedid': id, 'csrfmiddlewaretoken': csrf })
-      });
-      
-      
-      $newbies.removeClass("new");
-      
-		$.get('/', function (response) {
-			var source = $(''+response+'');
-			$('#summary').html(source.find('#summary').html());
-			});
-      
-      data.show('normal');
-    }
-  });
-
-};
-
-setInterval("updateEntries()",3000);
-
-
-
-$(document).ready(function() {
-  
-  $("#spinner").hide();
-  
-  // js script for list hover and click animation
-  $(".hoverclick").click(function(){
-    $(this).stop().fadeOut(10).fadeIn(500);
-  });
-  $(".hoverclick").mouseenter(function(){
-    $(this).fadeOut(100);
-    $(this).fadeIn(100);
-  },null);
-  
-  
-  // Start Hide/Show
-  
-  
-  $("#hs_totals").click(function(event){
-    var text = $(this).text();
-    if (text == "Hide Totals") {
-      $(this).text("Show Totals");
-    } else {
-      $(this).text("Hide Totals");
-    }
-  });
-  
-  
-  
-  // End Hide/Show
-
-  // Start auto scroll
-  
-  $(window).data('ajaxready', true).scroll(function(){
-  if ($(window).data('ajaxready') == false) return;
-
-  var scrollTop = $(document).scrollTop();
-  var windowHeight = $(window).height();
-  var bodyHeight = $(document).height() - windowHeight;
-  var scrollPercentage = (scrollTop / bodyHeight);
-  var lid = getLid2();
-  
-  // if the scroll is more than 90% from the top, load more content.
-  if (lid > 1) {
-    if(scrollPercentage > 0.90) {
-      $(window).data('ajaxready', false);
-      // console.log("bottom");
-    	//ajax get of next data
-    	$("#spinner").show();
-    	$.get('/ajax_get_next_entries/', { 'lid': lid }, function(rawdata, status) {
-        if (status == 'success' ) {
-          
-          
-          var data = $(rawdata);
-          $(data).find(".hoverclick").click(function(event){
-            $(this).stop().fadeOut(10).fadeIn(500);
-          });
-          
-          
-          $(data).find(".hoverclick").mouseenter(function(){
-            $(this).fadeOut(100);
-            $(this).fadeIn(100);
-          },null);
-          
-          $(data).find(".thankbox").click(function(event){
-            var id = $(this).closest('.panel-collapse').prop('id')
-            var csrf = $("input[name='csrfmiddlewaretoken'").attr('value');
-            $(this).closest(".panel-collapse").parent().find('.glyphicon-alert').remove();
-            $(this).attr("disabled", true);
-            $.post("/ajax_thank_id/", { 'thankedid': id, 'csrfmiddlewaretoken': csrf })
-          });
-          
-          $("#spinner").hide();
-          $("#accordion").append(data);
-          $(window).data('ajaxready', true);
-        }
-      	})
-      }
-    }
-  });
-  // End auto scroll
-  
-  
-  // Begin sticky scroll
-  scrollIntervalID = setInterval(sticky_relocate, 10);
-  
-  
-  function sticky_relocate() {
-    var window_top = $(window).scrollTop();
-    var div_top = $('#sticky-anchor').offset().top;
-    if (window_top > div_top) {
-        $('#sticky').addClass('stick');
-        $('#sticky-anchor').height($('#sticky').outerHeight());
-        $(window).scrollTop(window_top);
-    } else {
-        $('#sticky').removeClass('stick');
-        $('#sticky-anchor').height(0);
-    }
-  }
-  // End sticky scroll
-  
-  
-  // Start Thanked handler
-  $(".thankbox").click(function(event){
-    var id = $(this).closest('.panel-collapse').prop('id')
-    var csrf = $("input[name='csrfmiddlewaretoken'").attr('value');
-    $(this).closest(".panel-collapse").parent().find('.glyphicon-alert').remove();
-    $(this).attr("disabled", true);
-    $.post("/ajax_thank_id/", { 'thankedid': id, 'csrfmiddlewaretoken': csrf })
-  });
-  // End Thanked handler
-
-});
-</script>
+<script src="/static/main/js/dashboard.js"></script>
 {% endblock %}
 
-
 {% block style %}
-<style>
-
-
-.sticky {
-    background-color: white;
-    width: inherit;
-}
-
-#sticky.stick {
-    position: fixed;
-    top: 0;
-    z-index: 1000;
-    width: 100%;
-    padding-right: 15px;
-    padding-left: 15px;
-    margin-right: auto;
-    margin-left: auto;
-}
-
-.panel-group {
-	margin-top: 30px;
-}
-
-.list-group-item {
-    position: relative;
-    display: block;
-    padding: 10px 15px;
-    margin-bottom: -1px;
-    background-color: #d9edf7;
-    border: 2px solid #337ab7;
-}
-.panel-default>.panel-heading {
-    color: #333;
-    background-color: #d9edf7;
-    border-color: #337ab7;
-}
-.panel-default>.monthly {
-  
-    background-color: #ffffdc;
-}
-.panel-heading {
-    cursor: pointer;
-}
-.red{
-    boarder: 1px solid black;
-    outline-color: red;
-    outline-style: dotted;
-}
-.green{
-    boarder: 1px solid black;
-    outline-color: green;
-    outline-style: dotted;
-}
-.blue{
-    boarder: 1px solid black;
-    outline-color: blue;
-    outline-style: dotted;
-}
-input[type="checkbox"] {
-  transform:scale(2, 2);
-}
-
-</style>
+<link href="/static/main/css/dashboard.css" rel="stylesheet" />	
 {% endblock %}

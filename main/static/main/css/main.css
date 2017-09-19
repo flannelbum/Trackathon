@@ -1,0 +1,36 @@
+.tags{
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-start;
+	position: relative;
+	top: -10px;      
+}
+
+.tag{
+	padding-left: 5px;
+	padding-right: 5px;
+	background-color: #f3f2ff;
+}
+
+.tag:not(:last-child) {
+  margin-right: 4px;
+}
+
+
+.red{
+    boarder: 1px solid black;
+    outline-color: red;
+    outline-style: dotted;
+}
+
+.green{
+    boarder: 1px solid black;
+    outline-color: green;
+    outline-style: dotted;
+}
+
+.blue{
+    boarder: 1px solid black;
+    outline-color: blue;
+    outline-style: dotted;
+}

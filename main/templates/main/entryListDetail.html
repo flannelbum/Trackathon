@@ -4,10 +4,33 @@
 <!-- START Entry listing -->
 {% if label %}<h1>{{ label }}</h1>{% endif %}
 <div class="container-fluid">
-	<div style="visibility:hidden" id="latestid">{{ latestid }}</div>
+
+	{% if summaryData %}
+		{% include 'main/summary.html' %}
+	{% endif %}
+
  	<div class="panel-group" id="accordion">
   		{% include 'main/multiple_pledges.html' %}
 	 </div>
 </div>
 <!--END Entry listing  -->
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript">
+	$(".hoverclick").click(function(){
+		$(this).stop().fadeOut(10).fadeIn(500);
+	});
+	
+	$(".hoverclick").mouseenter(function(){
+		$(this).fadeOut(100);
+	    $(this).fadeIn(100);
+	},null);
+	
+	$('.panel-group input[type=checkbox]').attr('disabled','true');
+
+	// the report pill should be active if we're on this page
+	$('#nav_report').addClass('active');
+	
+</script>
 {% endblock %}

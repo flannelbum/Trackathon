@@ -1,3 +1,4 @@
 from django.contrib import admin
 
-# Register your models here.
+from models import PledgeEntry
+admin.site.register(PledgeEntry)

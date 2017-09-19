@@ -1,47 +1,40 @@
 {% load prepend_dollars %}
+<!-- {{ entry.id }} -->
 <div class="panel panel-default">
-  <!-- {{ entry.id }} -->
-
-  {% if entry.singleormonthly == 'monthly' %}
-  <div class="hoverclick panel-heading monthly" data-toggle="collapse" data-parent="#accordion" data-target="#{{ entry.id }}">
-  {% else %}
-  <div class="hoverclick panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#{{ entry.id }}">
-  {% endif%}
+	{% if entry.singleormonthly == 'monthly' %}
+	<div class="hoverclick panel-heading monthly" data-toggle="collapse" data-parent="#accordion" data-target="#{{ entry.id }}">
+	{% else %}
+	<div class="hoverclick panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#{{ entry.id }}">
+	{% endif%}
+    	<h4 class="panel-title">
+			<div>
+				{% if entry.beenthanked == False %}<span class="glyphicon glyphicon-alert"></span>{% endif %}
+				{% if entry.ftdonor == True %}<span class="glyphicon glyphicon-heart"></span>{% endif %}
+				{{ entry.amount | prepend_dollars }} - {{ entry.firstname }} {{ entry.lastname }} - {{ entry.city }} - {{ entry.callsign }}
+			</div>
+		</h4>
+  	</div>
   
-    <h4 class="panel-title">
-      <div >
-        {% if entry.beenthanked == False %}
-        <span class="glyphicon glyphicon-alert"></span>
-        {% endif %}
-        
-        {% if entry.ftdonor == True %}
-        <span class="glyphicon glyphicon-heart"></span>
-        {% endif %}
-        
-        {{ entry.amount | prepend_dollars }} - {{ entry.firstname }} {{ entry.lastname }} - {{ entry.city }} - {{ entry.callsign }}
-      </div>
-    </h4>
-  </div>
-  <div id="{{ entry.id }}" class="panel-collapse collapse">
-    <div class="panel-body">
-      <div><strong>Created:</strong> {{ entry.create_date }} <strong>SystemID:</strong> {{ entry.id }}</div>
-      <div><strong>Single/Monthly: </strong>{{ entry.singleormonthly|title }} <strong>First Time Donor: </strong>{{ entry.ftdonor }}</div>
-      <div><strong>Thanked: </strong>
-        {%if entry.beenthanked %}
-        <input style="position:relative;left:10px" type="checkbox" checked="True" disabled /> 
-        {% else %}
-        <input style="position:relative;left:10px" class="thankbox" type="checkbox" /> 
-        {% endif %}
-      </div>
-      <div><strong>Station:</strong> {{ entry.callsign }}</div>
-      <div><strong>Parish:</strong> {{ entry.parish }}</div>
-      <div><strong>Group Call-out:</strong> {{ entry.groupcallout }}</div>
-      <div><strong>Tags:</strong> {{ tags }}</div>
-      <div><strong>Comment:</strong> {{ entry.comment }}</div>
-      <div style="text-align:center;top:10px">
-      	<a href="/editPledgeEntry/?entryid={{ entry.id }}">Edit this entry</a> - 
-      	<a href="/deletePledgeEntry/?entryid={{ entry.id }}"> Delete entry</a>
-      </div>
-    </div>
-  </div>
+	<div id="{{ entry.id }}" class="panel-collapse collapse">
+		<div class="panel-body">
+			<div><strong>Created:</strong> {{ entry.create_date }} <strong>SystemID:</strong> {{ entry.id }}</div>
+			<div><strong>Single/Monthly: </strong>{{ entry.singleormonthly|title }} <strong>First Time Donor: </strong>{{ entry.ftdonor }}</div>
+			<div><strong>Thanked: </strong>
+				{%if entry.beenthanked %}
+				<input style="position:relative;left:10px" type="checkbox" checked="True" disabled />
+				{% else %}
+				<input style="position:relative;left:10px" class="thankbox" type="checkbox" /> 
+				{% endif %}
+			</div>
+			<div><strong>Station:</strong> {{ entry.callsign }}</div>
+			<div><strong>Parish:</strong> {{ entry.parish }}</div>
+			<div><strong>Group Call-out:</strong> {{ entry.groupcallout }}</div>
+			<div><strong>Tags:</strong> {{ tags }}</div>
+			<div><strong>Comment:</strong> {{ entry.comment }}</div>
+			<div style="text-align:center;top:10px">
+				<a href="/editPledgeEntry/?entryid={{ entry.id }}">Edit this entry</a> - 
+				<a href="/deletePledgeEntry/?entryid={{ entry.id }}"> Delete entry</a>
+			</div>
+		</div>
+	</div>
 </div>

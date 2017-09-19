@@ -1,6 +1,5 @@
 from django.db import models
 from tagging.registry import register
-from tagging_autocomplete.models import TagAutocompleteField
 
 class PledgeEntry(models.Model):
 

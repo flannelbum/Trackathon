@@ -237,7 +237,9 @@ def get_summaryData(entries, label):
 def entryListDetail(request):
     entries = decode_entryIDs(request.GET.get('list'))
     label = request.GET.get('label')
-    return render(request, 'main/entryListDetail.html', { 'label': label, 'entries': entries })
+#     label = labe
+    summaryData = get_summaryData(entries, label)
+    return render(request, 'main/entryListDetail.html', { 'label': label, 'summaryData': summaryData, 'entries': entries })
   
 
 def deletePledgeEntry(request):

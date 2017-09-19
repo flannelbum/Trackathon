@@ -1,14 +1,14 @@
 {% load prepend_dollars %} 
 {% if summaryData.label %}{{ summaryData.label }}{% endif %}
 <ul>
-	<li>Total Pledges <strong><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} - Total&{% endif %}list={{ summaryData.total_entries }}">{{ summaryData.total_pledges }} / {{ summaryData.total_dollars | prepend_dollars }}</a></strong></li>
-	<li>New Donors <strong><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} - by New Donors&{% endif %}list={{ summaryData.new_entries }}">{{ summaryData.new_donors }} / {{ summaryData.new_donor_dollars | prepend_dollars }}</a></strong></li>
-	<li>Monthly Donors <strong><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} - by Monthly Donors&{% endif %}list={{ summaryData.monthly_entries }}">{{ summaryData.monthly_donors }} / {{ summaryData.monthly_dollars | prepend_dollars }}</a></strong></li>
-	<li>Single Donors <strong><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} - by Single Donors&{% endif %}list={{ summaryData.single_entries }}">{{ summaryData.single_donors }} / {{ summaryData.single_dollars | prepend_dollars }}</a></strong></li>
+	<li>Total Pledges <strong><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Total&{% endif %}list={{ summaryData.total_entries }}">{{ summaryData.total_pledges }} / {{ summaryData.total_dollars | prepend_dollars }}</a></strong></li>
+	<li>New Donors <strong><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo New Donors&{% endif %}list={{ summaryData.new_entries }}">{{ summaryData.new_donors }} / {{ summaryData.new_donor_dollars | prepend_dollars }}</a></strong></li>
+	<li>Monthly Donors <strong><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Monthly Donors&{% endif %}list={{ summaryData.monthly_entries }}">{{ summaryData.monthly_donors }} / {{ summaryData.monthly_dollars | prepend_dollars }}</a></strong></li>
+	<li>Single Donors <strong><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Single Donors&{% endif %}list={{ summaryData.single_entries }}">{{ summaryData.single_donors }} / {{ summaryData.single_dollars | prepend_dollars }}</a></strong></li>
 </ul>
 <div class="tags"> 
 {%for tag, tagdata in summaryData.tags.items %}
-	<div class="tag" title="{{ tag }}: {{ tagdata.1 | prepend_dollars }}"><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} - tagged with {{ tagdata.0 }}&{% endif %}list={{ tagdata.2 }}">{{ tag }}</a></div>
+	<div class="tag" title="{{ tag }}: {{ tagdata.1 | prepend_dollars }}"><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo tagged {{ tagdata.0 }}&{% endif %}list={{ tagdata.2 }}">{{ tag }}</a></div>
 {% endfor %}
 </div>
 
@@ -51,19 +51,3 @@
         
     </div>
 	{% endif %}
-	
-{% block style %}
-<style>
-.tags{
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: flex-start;
-	position: relative;
-	top: -10px;      
-}
-.tag{
-	padding-left: 5px;
-	padding-right: 5px;
-}
-</style>
-{% endblock %}

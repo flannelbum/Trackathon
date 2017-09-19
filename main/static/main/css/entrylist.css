@@ -1,0 +1,30 @@
+.panel-group {
+	margin-top: 30px;
+}
+
+.list-group-item {
+    position: relative;
+    display: block;
+    padding: 10px 15px;
+    margin-bottom: -1px;
+    background-color: #d9edf7;
+    border: 2px solid #337ab7;
+}
+
+.panel-default>.panel-heading {
+    color: #333;
+    background-color: #d9edf7;
+    border-color: #337ab7;
+}
+
+.panel-default>.monthly {
+    background-color: #ffffdc;
+}
+
+.panel-heading {
+    cursor: pointer;
+}
+
+input[type="checkbox"] {
+  transform:scale(2, 2);
+}

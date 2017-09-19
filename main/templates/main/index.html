@@ -6,11 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link href="/static/main/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/main/css/bootstrap.min.css" />
 	<script src="/static/main/jquery/jquery-3.2.1.min.js"></script>
     <script src="/static/main/js/bootstrap.min.js"></script>
 	<script src="/static/main/jquery/jquery-ui-1.12.1_base/jquery-ui.min.js"></script>
 	<link rel="stylesheet" href="/static/main/jquery/jquery-ui-1.12.1_base/jquery-ui.theme.min.css">
+	<link rel="stylesheet" href="/static/main/css/main.css">
 
 
     <!-- http://www.favicon-generator.org/ -->
@@ -101,10 +102,15 @@
 
     <!-- Bottom script stuff -->
 
-    {% block style %}{% endblock %}
+    {% block style %}
+    <!-- Start style from index.html -->
+    <!-- End style from index.html -->
+    {% endblock %}
 
-    
-    <script>
+    {% block javascript %}
+    <!-- Start Javascript from index.html -->
+    {% endblock %}
+        <script>
 
       $(document).ready(function(){
         // Begin NAV handling
@@ -121,6 +127,6 @@
       
       });
       </script>
-    {% block javascript %}{% endblock %}
+      <!-- End Javascript from index.html -->
   </body>
 </html>
