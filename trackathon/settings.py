@@ -123,3 +123,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 CONFIG_PASSWORD = 'testPassword'
+
+# needed for admin style files
+ADMIN_MEDIA_PREFIX = os.path.join(STATIC_ROOT, 'admin')
