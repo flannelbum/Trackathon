@@ -25,7 +25,7 @@ SECRET_KEY = 'y33*pos4furf&sa2t=*847s8_3a&$g#n#-q+c^1g)^wg2*6$*0'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.45','192.168.1.41', '127.0.0.1', '192.168.1.152', '192.168.1.194', 'arnweb1', 'flannelbum.mooo.com', 'localhost','192.168.1.169']
+ALLOWED_HOSTS = ['arnweb1', 'flannelbum.mooo.com', 'raspberrypi', 'blaze', 'localhost', '127.0.0.1', '0.0.0.0']
 
 
 # Application definition
@@ -122,7 +122,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-CONFIG_PASSWORD = 'testPassword'
 
 # needed for admin style files
 ADMIN_MEDIA_PREFIX = os.path.join(STATIC_ROOT, 'admin')
