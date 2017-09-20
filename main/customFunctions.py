@@ -1,7 +1,10 @@
-import random
 import datetime
+import random
+
 from django.conf import settings
+
 from main.forms import PledgeEntryForm
+from main.models import Station
 
 
 def int_or_0(value):
@@ -25,15 +28,23 @@ def getRandomPledgeForm():
     form.firstname = myline[0]
     form.lastname = myline[1]
     form.city = myline[2]
-    form.ftdonor = myline[3]
-    form.beenthanked = myline[4]
+    
+    # translate random data csv instead of rewritting it for now
+    print( str(myline[3]) + " " + str(myline[6]))
+    ml3 = False
+    ml6 = False
+    if str(myline[3]) == 'TRUE':
+        ml3 = True
+    if str(myline[6]) == 'monthly':
+        ml6 = True
+    
+    form.is_first_time_donor = ml3
+    form.is_monthly = ml6
+    
     form.amount = myline[5]
-    form.singleormonthly = myline[6]
-    form.callsign = myline[7]
-    form.parish = myline[8]
-    form.groupcallout = myline[9]
+    form.station = Station.objects.get(callsign=myline[7])
     form.comment = myline[10]
-
+    
     return form
 
 

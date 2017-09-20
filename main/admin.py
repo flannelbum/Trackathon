@@ -1,4 +1,6 @@
 from django.contrib import admin
 
-from .models import PledgeEntry
-admin.site.register(PledgeEntry)
+from .models import Pledge, TrackathonSetting, Station
+admin.site.register(Pledge)
+admin.site.register(TrackathonSetting)
+admin.site.register(Station)

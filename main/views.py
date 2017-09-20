@@ -13,20 +13,20 @@ from tagging.models import Tag, TaggedItem
 
 from main.customFunctions import getRandomPledgeForm, int_or_0
 from main.forms import PledgeEntryForm
-from main.models import PledgeEntry
+from main.models import Pledge
 
 
 def dashboard(request):
     try:
         context = {}
-        context['overall_totals_summaryData'] = get_summaryData( PledgeEntry.objects.all(), "Overall Totals" )
+        context['overall_totals_summaryData'] = get_summaryData( Pledge.objects.all(), "Overall Totals" )
         
         # get latest entry
-        latestentry = PledgeEntry.objects.all().latest('create_date')
+        latestentry = Pledge.objects.all().latest('create_date')
         context['lid'] = latestentry.id
         
         # get all entries in the same day as latest
-        day_entries = PledgeEntry.objects.filter(create_date__date=( latestentry.create_date ))
+        day_entries = Pledge.objects.filter(create_date__date=( latestentry.create_date ))
         context['latest_day_summaryData'] = get_summaryData(day_entries, "Latest Day Totals")
         
         # all entires for the latest hour
@@ -42,14 +42,14 @@ def dashboard(request):
             
         # prevent exception when we're in our first hour
         try:
-            previous_entry = PledgeEntry.objects.filter(create_date__lte=olderthan).latest('create_date')
+            previous_entry = Pledge.objects.filter(create_date__lte=olderthan).latest('create_date')
             previous_entries = get_entries_in_same_hour_as(previous_entry)
             context['previous_hour_summaryData'] = get_summaryData(previous_entries, "Previous Hour Totals")
-        except PledgeEntry.DoesNotExist:
+        except Pledge.DoesNotExist:
             pass
         
         # initial entries context for the acccordian list
-        context['entries'] = PledgeEntry.objects.all().order_by('-id')[:15]
+        context['entries'] = Pledge.objects.all().order_by('-id')[:15]
         return render(request, 'main/dashboard.html', context)
     
     except:
@@ -60,7 +60,7 @@ def dashboard(request):
 def get_entries_in_same_hour_as(entry):
     starttime = datetime.datetime.combine( entry.create_date.date(), datetime.time( entry.create_date.hour, 0, 0, 0, tzinfo=pytz.UTC))
     endtime = datetime.datetime.combine( starttime.date(), datetime.time( starttime.hour, 59, 59, 999999, tzinfo=pytz.UTC))
-    return PledgeEntry.objects.filter(create_date__range=( starttime, endtime ))
+    return Pledge.objects.filter(create_date__range=( starttime, endtime ))
   
 def config(request):
     message = ""
@@ -90,13 +90,13 @@ def report(request):
     context = {}
     daySummary = OrderedDict()
     localtz = pytz.timezone( settings.TIME_ZONE ) # https://stackoverflow.com/questions/24710233/python-convert-time-to-utc-format
-    days = PledgeEntry.objects.datetimes('create_date', 'day', 'DESC', localtz) 
+    days = Pledge.objects.datetimes('create_date', 'day', 'DESC', localtz) 
        
     dayDetail = request.GET.get('dayDetail', None)
     
     for day in days:       
         label = calendar.day_name[day.weekday()] + ", " + str(day.month) + "/" + str(day.day) + "/" + str(day.year)
-        entries = PledgeEntry.objects.filter(create_date__date=datetime.datetime(day.year, day.month, day.day, 0,0, tzinfo=localtz))
+        entries = Pledge.objects.filter(create_date__date=datetime.datetime(day.year, day.month, day.day, 0,0, tzinfo=localtz))
         count = entries.count()
         
         if dayDetail == day.date().__str__():
@@ -129,7 +129,7 @@ def hourlyBreakdown(entries):
         for entry in matches:
             count = count + 1
             hrlyids.append(entry.id)
-        qs = PledgeEntry.objects.filter(id__in=hrlyids)
+        qs = Pledge.objects.filter(id__in=hrlyids)
         
         createdate = entry.create_date
         timestring = createdate.astimezone( pytz.timezone( settings.TIME_ZONE ))
@@ -155,7 +155,7 @@ def decode_entryIDs(encodedstring):
     decodedentryidstring = urlsafe_b64decode(encodedstring.encode('ascii'))
     
     idlist = decodedentryidstring.split(b',')
-    testentries = PledgeEntry.objects.filter(id__in=idlist)
+    testentries = Pledge.objects.filter(id__in=idlist)
     return testentries
       
   
@@ -172,26 +172,26 @@ def get_taglist(entries):
 
 
 def get_summaryData(entries, label):
-    latestid = PledgeEntry.objects.latest('id').id
+    latestid = Pledge.objects.latest('id').id
     
     if entries == None:
-        entries = PledgeEntry.objects.all()
+        entries = Pledge.objects.all()
     
     total_entries = encode_entryIDs(entries)
     total_dollars = entries.aggregate(Sum('amount'))['amount__sum']
     total_pledges = entries.count()
     
-    nd_entries = entries.filter(ftdonor__exact=True)
+    nd_entries = entries.filter(is_first_time_donor__exact=True)
     new_entries = encode_entryIDs(nd_entries)
     new_donors = nd_entries.count()
     new_donor_dollars = nd_entries.aggregate(Sum('amount'))['amount__sum']
     
-    md_entries = entries.filter(singleormonthly__exact="monthly")
+    md_entries = entries.filter(is_monthly__exact=True)
     monthly_entries = encode_entryIDs(md_entries)
     monthly_donors = md_entries.count()
     monthly_dollars = md_entries.aggregate(Sum('amount'))['amount__sum']
     
-    sd_entries = entries.filter(singleormonthly__exact="single")
+    sd_entries = entries.filter(is_monthly__exact=False)
     single_entries = encode_entryIDs(sd_entries)
     single_donors = sd_entries.count()
     single_dollars = sd_entries.aggregate(Sum('amount'))['amount__sum']
@@ -210,7 +210,7 @@ def get_summaryData(entries, label):
     sql += "SUM(CASE WHEN singleormonthly = 'single' THEN 1 ELSE 0 END) AS singles "
     sql += "FROM main_pledgeentry GROUP BY callsign ORDER BY SUM(amount) DESC "
     
-    stations = PledgeEntry.objects.raw(sql)
+    stations = Pledge.objects.raw(sql)
     
     summaryData = {
         'label': label,
@@ -246,11 +246,15 @@ def deletePledgeEntry(request):
         
     entryid = int_or_0( request.GET.get('entryid') )
     
-    p = PledgeEntry.objects.get(pk=entryid)
+    p = Pledge.objects.get(pk=entryid)
     p.delete()    
 
     if 'pledgeEntry' in request.META['HTTP_REFERER']:
         return HttpResponseRedirect('/pledgeEntry/')
+    elif 'report' in request.META['HTTP_REFERER']:
+        return HttpResponseRedirect('/report/') 
+    elif 'entryListDetail' in request.META['HTTP_REFERER']:
+        return HttpResponseRedirect('/report/')
     else:
         return HttpResponseRedirect('/')
 
@@ -258,14 +262,14 @@ def deletePledgeEntry(request):
     
 def editPledgeEntry(request):
   
-    entries = PledgeEntry.objects.order_by('-id')[:20]  # [::-1]
+    entries = Pledge.objects.order_by('-id')[:20]  # [::-1]
     entryid = int_or_0(request.POST.get('entryid'))
     
     if entryid == 0:
         entryid = int_or_0(request.GET.get('entryid'))
         # print(entryid)
     
-    p = PledgeEntry.objects.get(pk=entryid)
+    p = Pledge.objects.get(pk=entryid)
     
     if request.method == "POST":
         form = PledgeEntryForm(request.POST or None)
@@ -274,12 +278,10 @@ def editPledgeEntry(request):
             p.firstname = form.cleaned_data['firstname']
             p.lastname = form.cleaned_data['lastname']
             p.city = form.cleaned_data['city']
-            p.ftdonor = form.cleaned_data['ftdonor']
             p.amount = form.cleaned_data['amount']
-            p.singleormonthly = form.cleaned_data['singleormonthly']
-            p.callsign = form.cleaned_data['callsign']
-            p.parish = form.cleaned_data['parish']
-            p.groupcallout = form.cleaned_data['groupcallout']
+            p.is_first_time_donor = form.cleaned_data['is_first_time_donor']
+            p.is_monthly = form.cleaned_data['is_monthly']
+            p.station = form.cleaned_data['station']
             p.tags = form.cleaned_data['tags']
             p.comment = form.cleaned_data['comment']
             p.save()
@@ -295,12 +297,10 @@ def editPledgeEntry(request):
         form.fields["firstname"].initial = p.firstname
         form.fields["lastname"].initial = p.lastname
         form.fields["city"].initial = p.city
-        form.fields["ftdonor"].initial = p.ftdonor
         form.fields["amount"].initial = p.amount
-        form.fields["singleormonthly"].initial = p.singleormonthly
-        form.fields["callsign"].initial = p.callsign
-        form.fields["parish"].initial = p.parish
-        form.fields["groupcallout"].initial = p.groupcallout
+        form.fields["is_monthly"].initial = p.is_monthly
+        form.fields["is_first_time_donor"].initial = p.is_first_time_donor
+        form.fields["station"].initial = p.station
         form.fields["tags"].initial = tags
         form.fields["comment"].initial = p.comment
     
@@ -311,23 +311,20 @@ def pledgeEntry(request):
     
 #     template_name = 'main/pledgeEntry.html'
     
-    entries = PledgeEntry.objects.order_by('-id')[:20]  # [::-1]
+    entries = Pledge.objects.order_by('-id')[:20]  # [::-1]
     
     form = PledgeEntryForm(request.POST or None)
     
     if form.is_valid():
     
-        entry = PledgeEntry(
+        entry = Pledge(
             firstname=form.cleaned_data['firstname'],
             lastname=form.cleaned_data['lastname'],
             city=form.cleaned_data['city'],
-            ftdonor=form.cleaned_data['ftdonor'],
-            # beenthanked = form.cleaned_data['beenthanked'],
             amount=form.cleaned_data['amount'],
-            singleormonthly=form.cleaned_data['singleormonthly'],
-            callsign=form.cleaned_data['callsign'],
-            parish=form.cleaned_data['parish'],
-            groupcallout=form.cleaned_data['groupcallout'],
+            is_first_time_donor=form.cleaned_data['is_first_time_donor'],
+            is_monthly=form.cleaned_data['is_monthly'],
+            station=form.cleaned_data['station'],
             comment=form.cleaned_data['comment'],
             )
 
@@ -337,7 +334,7 @@ def pledgeEntry(request):
         entry.save()
         
         form = PledgeEntryForm(None)
-        entries = PledgeEntry.objects.order_by('-id')[:20]  # [::-1]
+        entries = Pledge.objects.order_by('-id')[:20]  # [::-1]
         return HttpResponseRedirect('/pledgeEntry/')
     
     if request.GET.get('getrandom', None):
@@ -346,13 +343,10 @@ def pledgeEntry(request):
         form.fields["firstname"].initial = myform.firstname
         form.fields["lastname"].initial = myform.lastname
         form.fields["city"].initial = myform.city
-        form.fields["ftdonor"].initial = myform.ftdonor
-        # form.fields["beenthanked"].initial = myform.beenthanked
         form.fields["amount"].initial = myform.amount
-        form.fields["singleormonthly"].initial = myform.singleormonthly
-        form.fields["callsign"].initial = myform.callsign
-        form.fields["parish"].initial = myform.parish
-        form.fields["groupcallout"].initial = myform.groupcallout
+        form.fields["is_first_time_donor"].initial = myform.is_first_time_donor
+        form.fields["is_monthly"].initial = myform.is_monthly
+        form.fields["station"].initial = myform.station
         form.fields["comment"].initial = myform.comment
 
     return render(request, 'main/pledgeEntry.html', { 'form': form, 'entries': entries })

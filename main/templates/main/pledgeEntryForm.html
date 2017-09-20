@@ -4,28 +4,21 @@
 <form action="/pledgeEntry/" method="POST" id="PledgeEntryForm" novalidate="novalidate">
 {% endif %}
 
-
-
 	{% csrf_token %}
 	<div class="form-group">
-		<table>
 		{% for field in form %}
-			<tr>
-				<td align="right">{{ field.label_tag }}</td>
-				<td>{{ field }}<div id="error" class="alert-warning">{{ field.errors.as_text }}</div></td>
-			</tr>
+		{{ field.label_tag }}
+		{{ field }}
+		<div id="error" class="alert-warning">{{ field.errors.as_text }}</div>
 		{% endfor %}
-		</table>
-		
-    
-    {% if entryObject.id %}
-    <input type="hidden" name="entryid" value="{{ entryid }}"/>
-    <input type="submit" value="Edit" />
-    {% else %}
-    <input type="submit" value="Submit" /> - <a href="/pledgeEntry/?getrandom=True">Add Random</a>
-    {% endif%}
-    
-    
-  </div>
+			
+		    
+		{% if entryObject.id %}
+		<input type="hidden" name="entryid" value="{{ entryid }}"/>
+		<input type="submit" value="Edit" />
+		{% else %}
+		<input type="submit" value="Submit" /> - <a href="/pledgeEntry/?getrandom=True">Add Random</a>
+		{% endif%}
+	</div>
 </form>
 

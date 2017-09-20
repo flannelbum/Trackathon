@@ -3,7 +3,7 @@ import time
 
 from django.http.response import HttpResponse
 
-from main.models import PledgeEntry
+from main.models import Pledge
 from trackathon import settings
 
 
@@ -20,7 +20,7 @@ def csvExport(request):
         writer = csv.writer(response)
         writer.writerow(['ID', 'DATEADDED', 'AMOUNT', 'FIRSTNAME', 'LASTNAME', 'CITY', 'FTD', 'PLEDGETYPE', 'STATION', 'PARISH', 'CALLOUT', 'COMMENT'])
         
-        entries = PledgeEntry.objects.all()
+        entries = Pledge.objects.all()
         for entry in entries:
             # writer.writerow([ entry.id, entry.create_date.strftime("%Y-%m-%d %H:%m:%S"), entry.amount, entry.firstname, entry.lastname, entry.city, entry.ftdonor, entry.singleormonthly, entry.callsign, entry.parish, entry.groupcallout, entry.comment])
             # # fix up the hour string for -4
@@ -36,7 +36,7 @@ def csvExport(request):
     writer = csv.writer(response)
     writer.writerow(['ID','DATEADDED','AMOUNT','FIRSTNAME','LASTNAME','CITY','FTD','PLEDGETYPE','STATION','PARISH','CALLOUT','COMMENT'])
     
-    entries = PledgeEntry.objects.all()
+    entries = Pledge.objects.all()
     for entry in entries:
         # writer.writerow([ entry.id, entry.create_date.strftime("%Y-%m-%d %H:%m:%S"), entry.amount, entry.firstname, entry.lastname, entry.city, entry.ftdonor, entry.singleormonthly, entry.callsign, entry.parish, entry.groupcallout, entry.comment])
         ## fix up the hour string for -4

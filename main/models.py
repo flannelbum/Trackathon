@@ -1,46 +1,58 @@
+import datetime
+
 from django.db import models
 from tagging.registry import register
 
-class PledgeEntry(models.Model):
 
-    BOOL_CHOICES = (
-        (True, 'Yes'),
-        (False, 'No'),
-    )
-    STATION_CHOICES = (
-        ('WNOC', '89.7 WNOC Toledo-Bowling Green'),
-        ('WHRQ', '88.1 WHRQ Sandusky-Port Clinton'),
-        ('WFOT', '89.5 WFOT Mansfield-Lexington'),
-        ('WSHB', '90.9 WSHB Willard-Shelby'),
-        ('WRRO', '89.9 WRRO Edon-Bryan'),
-        ('WLBJ', '104.1 WLBJ Fostoria'),
-        ('WEB', 'Online/WEB'),
-    )
-    ONETIMEORMONTHLY_CHOICES = (
-        ('single','Single'),
-        ('monthly','Monthly'),
-    )
+class TrackathonSetting(models.Model):
+    name = models.CharField(max_length=50)
+    enabled = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return str(self.name) + ": " + str(self.enabled)
+    
+
+class Station(models.Model):
+    name = models.CharField(max_length=200)
+    callsign = models.CharField(max_length=4)
+    
+    def __str__(self):
+        return str(self.callsign) + ": " + str(self.name)
+    
+
+class Pledge(models.Model):
+
     amount = models.DecimalField(max_digits=9,decimal_places=2)
-    ftdonor = models.BooleanField(choices=BOOL_CHOICES,default=False )
-    beenthanked = models.BooleanField(choices=BOOL_CHOICES,default=False )
-    create_date = models.DateTimeField(auto_now_add=True)
-    comment = models.TextField()
-    groupcallout = models.CharField(max_length=100)
-    singleormonthly = models.CharField(
-        max_length=10,
-        choices=ONETIMEORMONTHLY_CHOICES,
-        default='single'
-        )
-    callsign = models.CharField(
-        max_length=4,
-        choices=STATION_CHOICES
-        )
     firstname = models.CharField(max_length=35)
     lastname = models.CharField(max_length=35)
+    is_first_time_donor = models.BooleanField(default=False)
+    is_thanked = models.BooleanField(default=False)
+    is_monthly = models.BooleanField(default=False)
+    create_date = models.DateTimeField(default=datetime.datetime.now)
+    station = models.ForeignKey(Station, on_delete=models.PROTECT, null=True)
     city = models.CharField(max_length=35)
-    parish = models.CharField(max_length=100)
+    comment = models.TextField()
 
     def __str__(self):
-        return "$"+str(self.amount) +": "+ self.firstname +" "+ self.lastname +" - "+ self.callsign + " FTD:" + str(self.ftdonor) + " TY:" + str(self.beenthanked)
+        title = "$"+str(self.amount) +" - "+ self.firstname +" "+ self.lastname
+        if self.is_monthly:
+            title = title + " - Monthly"
+        if self.is_first_time_donor:
+            title = title + " - FirstTimeDonor"
+        if not self.is_thanked:
+            title = title + " - Not Thanked"
+        return  title
     
-register(PledgeEntry)
+register(Pledge)
+
+
+
+
+
+
+
+
+
+
+
+
