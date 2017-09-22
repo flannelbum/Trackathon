@@ -6,6 +6,14 @@
 <div class="container-fluid">
 
 	{% if summaryData %}
+	
+		{% if summaryData.stationData %}
+			{%with data=summaryData.stationData%}
+				{%for s,i in data.items %}<br/>--{{s}}--{{i.total_pledges}} - ${{ i.total_dollars}}{%endfor%}
+			{%endwith%}
+		{% endif %}
+		<br/><br/>
+	
 		{% include 'main/summary.html' %}
 	{% endif %}
 
@@ -16,21 +24,20 @@
 <!--END Entry listing  -->
 {% endblock %}
 
+{% block style %}
+<link href="/static/main/css/entrylist.css" rel="stylesheet" />	
+{% endblock %}
+
 {% block javascript %}
 <script type="text/javascript">
-	$(".hoverclick").click(function(){
-		$(this).stop().fadeOut(10).fadeIn(500);
-	});
-	
-	$(".hoverclick").mouseenter(function(){
-		$(this).fadeOut(100);
-	    $(this).fadeIn(100);
-	},null);
-	
+	// we don't want users able to change the thanked status as we're not handling that with this view
 	$('.panel-group input[type=checkbox]').attr('disabled','true');
 
 	// the report pill should be active if we're on this page
 	$('#nav_report').addClass('active');
+	
+	// enable fancy effects
+	$.get("/static/main/js/entryeffects.js");
 	
 </script>
 {% endblock %}

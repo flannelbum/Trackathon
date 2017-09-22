@@ -1,25 +1,25 @@
+from base64 import urlsafe_b64encode, urlsafe_b64decode
 import calendar
+from collections import OrderedDict
 import datetime
 import itertools
-import pytz
-from base64 import urlsafe_b64encode, urlsafe_b64decode
-from collections import OrderedDict
 
 from django.conf import settings
 from django.db.models import Sum
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+import pytz
 from tagging.models import Tag, TaggedItem
 
 from main.customFunctions import getRandomPledgeForm, int_or_0
 from main.forms import PledgeEntryForm
-from main.models import Pledge
+from main.models import Pledge, Station
 
 
 def dashboard(request):
     try:
         context = {}
-        context['overall_totals_summaryData'] = get_summaryData( Pledge.objects.all(), "Overall Totals" )
+        context['overall_totals_summaryData'] = get_summaryData( "Overall Totals", Pledge.objects.all(), None )
         
         # get latest entry
         latestentry = Pledge.objects.all().latest('create_date')
@@ -27,11 +27,11 @@ def dashboard(request):
         
         # get all entries in the same day as latest
         day_entries = Pledge.objects.filter(create_date__date=( latestentry.create_date ))
-        context['latest_day_summaryData'] = get_summaryData(day_entries, "Latest Day Totals")
+        context['latest_day_summaryData'] = get_summaryData( "Latest Day Totals", day_entries, None)
         
         # all entires for the latest hour
         latest_entries = get_entries_in_same_hour_as(latestentry)
-        context['latest_hour_summaryData'] = get_summaryData(latest_entries, "Latest Hour Totals") 
+        context['latest_hour_summaryData'] = get_summaryData( "Latest Hour Totals", latest_entries, None) 
         
         # all entires for the previous hour
         
@@ -44,7 +44,7 @@ def dashboard(request):
         try:
             previous_entry = Pledge.objects.filter(create_date__lte=olderthan).latest('create_date')
             previous_entries = get_entries_in_same_hour_as(previous_entry)
-            context['previous_hour_summaryData'] = get_summaryData(previous_entries, "Previous Hour Totals")
+            context['previous_hour_summaryData'] = get_summaryData( "Previous Hour Totals", previous_entries, None)
         except Pledge.DoesNotExist:
             pass
         
@@ -82,7 +82,7 @@ def report(request):
             context['date'] = datetime.date(day.year, day.month, day.day)
             context['hourlyBreakdown'] = hourlyBreakdown(entries)
                         
-        daySummary[day.date().__str__()] = {'dayDetail': day.date().__str__(), 'label': label, 'count': count, 'summaryData': get_summaryData(entries, label)}
+        daySummary[day.date().__str__()] = {'dayDetail': day.date().__str__(), 'label': label, 'count': count, 'summaryData': get_summaryData(label, entries, None)}
         context['daySummary'] = daySummary
         
     return render(request, 'main/report.html', context)
@@ -115,7 +115,7 @@ def hourlyBreakdown(entries):
         
         label = group + " Breakdown for " + timestring.strftime("%b %d, %Y") 
 
-        hbd[group] = {'count': len(hrlyids), 'summaryData': get_summaryData(qs, label), 'entries': qs}
+        hbd[group] = {'count': len(hrlyids), 'summaryData': get_summaryData(label, qs, None), 'entries': qs}
          
     return hbd
     
@@ -138,7 +138,7 @@ def decode_entryIDs(encodedstring):
     return testentries
       
   
-def get_taglist(entries):
+def get_taglist(entries, topnum):
     taglist = OrderedDict()
     
     tags = Tag.objects.usage_for_queryset(entries, counts=True, min_count=None)
@@ -147,15 +147,20 @@ def get_taglist(entries):
         tagged = TaggedItem.objects.get_by_model(entries, tag)
         taglist[tag.count.__str__() + "-" + tag.name] = tag.name, tagged.aggregate(Sum('amount'))['amount__sum'], encode_entryIDs(tagged)
             
+    if topnum != None:
+        int(topnum)
+        while len(taglist) > topnum:
+            taglist.popitem()
+            
     return taglist
 
 
-def get_summaryData(entries, label):
+def get_summaryData(label, entries, stations):
     latestid = Pledge.objects.latest('id').id
     
     if entries == None:
         entries = Pledge.objects.all()
-    
+
     total_entries = encode_entryIDs(entries)
     total_dollars = entries.aggregate(Sum('amount'))['amount__sum']
     total_pledges = entries.count()
@@ -175,26 +180,20 @@ def get_summaryData(entries, label):
     single_donors = sd_entries.count()
     single_dollars = sd_entries.aggregate(Sum('amount'))['amount__sum']
     
-    tags = get_taglist(entries)
-    
-        
-    # ## Possible MySQL snip to prevent the read from locking
-    # SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED ;
-    # SELECT * FROM TABLE_NAME ;
-    # COMMIT ;
-    
-#     sql = "SELECT id, callsign, SUM(amount) AS total, COUNT(id) AS pledges, "
-#     sql += "SUM(CASE WHEN ftdonor = '1' THEN 1 ELSE 0 END) AS newdonors, "
-#     sql += "SUM(CASE WHEN singleormonthly = 'monthly' THEN 1 ELSE 0 END) AS monthlies, "
-#     sql += "SUM(CASE WHEN singleormonthly = 'single' THEN 1 ELSE 0 END) AS singles "
-#     sql += "FROM main_pledgeentry GROUP BY callsign ORDER BY SUM(amount) DESC "
-#     
-#     stations = Pledge.objects.raw(sql)
+    # if we were told station data, we need full tags too
+    stationData = {}
+    if stations:
+        for station in stations:
+            station_entries = entries.filter(station=station)
+            if station_entries.count() > 0:
+                stationData[station.callsign] = get_summaryData(None, station_entries, None)        
+        tags = get_taglist(entries, None)
+    else:
+        tags = get_taglist(entries, 7)
     
     summaryData = {
         'label': label,
-        'latestid': latestid,
-#         'stations': stations,
+        'latestid': latestid, # don't think this should be here
         'total_entries': total_entries,
         'total_dollars': total_dollars,
         'total_pledges': total_pledges,
@@ -210,13 +209,16 @@ def get_summaryData(entries, label):
         'tags': tags,
     }
       
+    if len(stationData) > 0:
+        summaryData['stationData'] = stationData
+        
     return summaryData
 
   
 def entryListDetail(request):
     entries = decode_entryIDs(request.GET.get('list'))
     label = request.GET.get('label')
-    summaryData = get_summaryData(entries, label)
+    summaryData = get_summaryData(label, entries, Station.objects.all() )
     return render(request, 'main/entryListDetail.html', { 'label': label, 'summaryData': summaryData, 'entries': entries })
   
 

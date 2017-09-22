@@ -54,20 +54,7 @@ function updateEntries(){
       $(data).find(".hoverclick").addClass("new");
 
       $("#accordion").prepend(data);
-  
-      var $newbies = $(".new");
-      
-      
-      $newbies.click(function(event){
-        $(this).stop().fadeOut(10).fadeIn(500);
-      });
-      
-      
-      $newbies.mouseenter(function(){
-        $(this).fadeOut(100);
-        $(this).fadeIn(100);
-      },null);
-      
+       
       var $thankbox = $(data).find(".thankbox");
       
       $thankbox.click(function(event){
@@ -78,8 +65,6 @@ function updateEntries(){
         $.post("/ajax_thank_id/", { 'thankedid': id, 'csrfmiddlewaretoken': csrf })
       });
       
-      
-      $newbies.removeClass("new");
       
 		$.get('/', function (response) {
 			var source = $(''+response+'');
@@ -100,16 +85,9 @@ $(document).ready(function() {
   
   $("#spinner").hide();
   
-  // js script for list hover and click animation
-  $(".hoverclick").click(function(){
-    $(this).stop().fadeOut(10).fadeIn(500);
-  });
-  $(".hoverclick").mouseenter(function(){
-    $(this).fadeOut(100);
-    $(this).fadeIn(100);
-  },null);
+  $.get("/static/main/js/entryeffects.js");
   
-  
+ 
   // Start Hide/Show
   
   
@@ -149,15 +127,6 @@ $(document).ready(function() {
           
           
           var data = $(rawdata);
-          $(data).find(".hoverclick").click(function(event){
-            $(this).stop().fadeOut(10).fadeIn(500);
-          });
-          
-          
-          $(data).find(".hoverclick").mouseenter(function(){
-            $(this).fadeOut(100);
-            $(this).fadeIn(100);
-          },null);
           
           $(data).find(".thankbox").click(function(event){
             var id = $(this).closest('.panel-collapse').prop('id')
@@ -169,6 +138,7 @@ $(document).ready(function() {
           
           $("#spinner").hide();
           $("#accordion").append(data);
+          $.get("/static/main/js/entryeffects.js");
           $(window).data('ajaxready', true);
         }
       	})
