@@ -1,11 +1,12 @@
 {% extends 'main/index.html' %}
+{% load prepend_dollars %} 
 {% block title %}Pledge Entry{% endblock %}
 {% block content %}
 <div class="container-fluid">
 	<div class="row">
 		<div class="col-sm-6">
         {% if entryObject.id %}
-        	<h3>Edit: ${{ entryObject.amount }} {{ entryObject.firstname }} - {{ entryObject.lastname }}</h3>
+        	<h3>Edit: {{ entryObject.amount | prepend_dollars}} - {{ entryObject.firstname }} {{ entryObject.lastname }}</h3>
         	<div id="pledgeFormContent">
         		{% include 'main/pledgeEntryForm.html' %}
         	</div>

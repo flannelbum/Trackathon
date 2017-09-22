@@ -61,27 +61,6 @@ def get_entries_in_same_hour_as(entry):
     starttime = datetime.datetime.combine( entry.create_date.date(), datetime.time( entry.create_date.hour, 0, 0, 0, tzinfo=pytz.UTC))
     endtime = datetime.datetime.combine( starttime.date(), datetime.time( starttime.hour, 59, 59, 999999, tzinfo=pytz.UTC))
     return Pledge.objects.filter(create_date__range=( starttime, endtime ))
-  
-def config(request):
-    message = ""
-    permitted = False
-    context = {}
-    cfgpass = request.POST.get('cfgpw', None)
-    
-    if cfgpass == settings.CONFIG_PASSWORD:
-        permitted = True
-        context['cfgpass'] = cfgpass
-    else:
-        permitted = False
-        if request.method == 'GET':
-            message += "Please enter the config password"
-        else:
-            message += "Invalid Password"
-    
-    context['message'] = message
-    context['permitted'] = permitted
-    
-    return render(request, 'main/config.html', context)
     
     
   
@@ -204,18 +183,18 @@ def get_summaryData(entries, label):
     # SELECT * FROM TABLE_NAME ;
     # COMMIT ;
     
-    sql = "SELECT id, callsign, SUM(amount) AS total, COUNT(id) AS pledges, "
-    sql += "SUM(CASE WHEN ftdonor = '1' THEN 1 ELSE 0 END) AS newdonors, "
-    sql += "SUM(CASE WHEN singleormonthly = 'monthly' THEN 1 ELSE 0 END) AS monthlies, "
-    sql += "SUM(CASE WHEN singleormonthly = 'single' THEN 1 ELSE 0 END) AS singles "
-    sql += "FROM main_pledgeentry GROUP BY callsign ORDER BY SUM(amount) DESC "
-    
-    stations = Pledge.objects.raw(sql)
+#     sql = "SELECT id, callsign, SUM(amount) AS total, COUNT(id) AS pledges, "
+#     sql += "SUM(CASE WHEN ftdonor = '1' THEN 1 ELSE 0 END) AS newdonors, "
+#     sql += "SUM(CASE WHEN singleormonthly = 'monthly' THEN 1 ELSE 0 END) AS monthlies, "
+#     sql += "SUM(CASE WHEN singleormonthly = 'single' THEN 1 ELSE 0 END) AS singles "
+#     sql += "FROM main_pledgeentry GROUP BY callsign ORDER BY SUM(amount) DESC "
+#     
+#     stations = Pledge.objects.raw(sql)
     
     summaryData = {
         'label': label,
         'latestid': latestid,
-        'stations': stations,
+#         'stations': stations,
         'total_entries': total_entries,
         'total_dollars': total_dollars,
         'total_pledges': total_pledges,
@@ -237,7 +216,6 @@ def get_summaryData(entries, label):
 def entryListDetail(request):
     entries = decode_entryIDs(request.GET.get('list'))
     label = request.GET.get('label')
-#     label = labe
     summaryData = get_summaryData(entries, label)
     return render(request, 'main/entryListDetail.html', { 'label': label, 'summaryData': summaryData, 'entries': entries })
   
@@ -267,7 +245,6 @@ def editPledgeEntry(request):
     
     if entryid == 0:
         entryid = int_or_0(request.GET.get('entryid'))
-        # print(entryid)
     
     p = Pledge.objects.get(pk=entryid)
     
@@ -309,8 +286,6 @@ def editPledgeEntry(request):
 
 def pledgeEntry(request):
     
-#     template_name = 'main/pledgeEntry.html'
-    
     entries = Pledge.objects.order_by('-id')[:20]  # [::-1]
     
     form = PledgeEntryForm(request.POST or None)
@@ -338,7 +313,6 @@ def pledgeEntry(request):
         return HttpResponseRedirect('/pledgeEntry/')
     
     if request.GET.get('getrandom', None):
-        # print("getting random pledge")
         myform = getRandomPledgeForm()
         form.fields["firstname"].initial = myform.firstname
         form.fields["lastname"].initial = myform.lastname

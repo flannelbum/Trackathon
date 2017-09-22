@@ -17,8 +17,4 @@ urlpatterns = [
     url(r'^ajax_thank_id/$', ajax.ajax_thank_id, name='ajax_thank_id'),
     url(r'^editPledgeEntry/$', views.editPledgeEntry, name='editPledgeEntry'),
     url(r'^csvExport/$', csvExport.csvExport, name='csvExport'),
-    url(r'^config/$', views.config, name='config'),
-#     url(r'^list$', list_tags, name='tagging_autocomplete-list'),
-    # url(r'^test/$', views.test, name='test'),
 ]
-# 
