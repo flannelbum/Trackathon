@@ -158,10 +158,19 @@ $(document).ready(function() {
     if (window_top > div_top) {
         $('#sticky').addClass('stick');
         $('#sticky-anchor').height($('#sticky').outerHeight());
+        
+        //$('#sticky').width($('#sticky').width());
+//        $('#sticky').width($('#sticky-anchor').width());
+        
+        
         $(window).scrollTop(window_top);
     } else {
         $('#sticky').removeClass('stick');
         $('#sticky-anchor').height(0);
+        
+//        $('#sticky').width($('#sticky').width());
+        $('#sticky').width($('#sticky-anchor').width());
+        
     }
   }
   // End sticky scroll
