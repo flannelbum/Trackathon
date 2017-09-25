@@ -63,7 +63,7 @@
 					<th class="active">Monthly Donors</th>
 					<td>
 						<strong>
-						{% if summaryData_monthly_donors %}
+						{% if summaryData.monthly_donors %}
 						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Monthly Donors&{% endif %}list={{ summaryData.monthly_entries }}">{{ summaryData.monthly_donors }} / {{ summaryData.monthly_dollars | prepend_dollars }}</a>
 						{% else %}
 						0
