@@ -1,53 +1,164 @@
 {% load prepend_dollars %} 
-{% if summaryData.label %}{{ summaryData.label }}{% endif %}
-<ul>
-	<li>Total Pledges <strong><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Total&{% endif %}list={{ summaryData.total_entries }}">{{ summaryData.total_pledges }} / {{ summaryData.total_dollars | prepend_dollars }}</a></strong></li>
-	<li>New Donors <strong><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo New Donors&{% endif %}list={{ summaryData.new_entries }}">{{ summaryData.new_donors }} / {{ summaryData.new_donor_dollars | prepend_dollars }}</a></strong></li>
-	<li>Monthly Donors <strong><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Monthly Donors&{% endif %}list={{ summaryData.monthly_entries }}">{{ summaryData.monthly_donors }} / {{ summaryData.monthly_dollars | prepend_dollars }}</a></strong></li>
-	<li>Single Donors <strong><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Single Donors&{% endif %}list={{ summaryData.single_entries }}">{{ summaryData.single_donors }} / {{ summaryData.single_dollars | prepend_dollars }}</a></strong></li>
-</ul>
-<div class="tags"> 
-{%for tag, tagdata in summaryData.tags.items %}
-	<div class="tag" title="{{ tag }}: {{ tagdata.1 | prepend_dollars }}"><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo tagged {{ tagdata.0 }}&{% endif %}list={{ tagdata.2 }}">{{ tag }}</a></div>
-{% endfor %}
-</div>
-
-
-	{% if 1 == 2 %} {# hush station data, don't say a word. 
-    <div class="col-sm-4">
-      
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Station</th>
-              <th>Total</th>
-              <th>Pledges</th>
-              <th>New</th>
-              <th>Monthly</th>
-              <th>Single</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for station in summaryData.stations %}
-            <tr>
-              <td>{{ station.callsign }}</td>
-              <td>{{ station.total | prepend_dollars }}</td>
-              <td>{{ station.pledges }}</td>
-              <td>{{ station.newdonors }}</td>
-              <td>{{ station.monthlies }}</td>
-              <td>{{ station.singles }}</td>
-            </tr>
-            {% endfor %}
-            <tr>
-              <td><strong>Totals:</strong></td>
-              <td><strong>{{ summaryData.grand_total | prepend_dollars }}</strong></td>
-              <td><strong>{{ summaryData.total_pledges }}</strong></td>
-              <td><strong>{{ summaryData.total_new_donors }}</strong></td>
-              <td><strong>{{ summaryData.total_monthly_donors }}</strong></td>
-              <td><strong>{{ summaryData.total_single_donors }}</strong></td>
-            </tr>
-          </tbody>
-        </table>
-        
-    </div>
+<div class="container-fluid"><!-- summary container -->
+	{% if summaryData.stationData %}
+	<div class="row table-responsive"><!-- summary table -->
+		<table class="table">
+			<thead>
+				<tr>
+					<th class="active"></th>
+					<th class="active">Overall</th>
+					{% for station in summaryData.stationData %}
+					<th class="active">{{ station }}</th>
+					{% endfor %}
+				</tr>
+			</thead>
+			<tbody class="summarytable">
+				<tr>
+					<th class="active">Total Pledges</th>
+					<td>
+						<strong>
+						{% if summaryData.total_pledges %}
+						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Total&{% endif %}list={{ summaryData.total_entries }}">{{ summaryData.total_pledges }} / {{ summaryData.total_dollars | prepend_dollars }}</a>
+						{% else %}
+						0
+						{% endif %}
+						</strong>
+					</td>
+					{% for station,d in summaryData.stationData.items %}
+					<td>
+						<strong>
+						{% if d.total_pledges %}
+						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo {{ station }} Total&{% endif %}list={{ d.total_entries }}">{{ d.total_pledges }} / {{ d.total_dollars | prepend_dollars }}</a>
+						{% else %}
+						0
+						{% endif %}
+						</strong>
+					</td>
+					{% endfor %}
+				</tr>
+				<tr>
+					<th class="active">New Donors</th>
+					<td>
+						<strong>
+						{% if summaryData.new_donors %}
+						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo New Donors&{% endif %}list={{ summaryData.new_entries }}">{{ summaryData.new_donors }} / {{ summaryData.new_donor_dollars | prepend_dollars }}</a>
+						{% else %}
+						0
+						{% endif %}
+						</strong>
+					</td>
+					{% for station,d in summaryData.stationData.items %}
+					<td>
+						<strong>
+						{% if d.new_donors %}
+						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo {{ station }} New Donors&{% endif %}list={{ d.new_entries }}">{{ d.new_donors }} / {{ d.new_donor_dollars | prepend_dollars }}</a>
+						{% else %}
+						0
+						{% endif %}
+						</strong>
+					</td>
+					{% endfor %}
+				</tr>
+				<tr>
+					<th class="active">Monthly Donors</th>
+					<td>
+						<strong>
+						{% if summaryData_monthly_donors %}
+						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Monthly Donors&{% endif %}list={{ summaryData.monthly_entries }}">{{ summaryData.monthly_donors }} / {{ summaryData.monthly_dollars | prepend_dollars }}</a>
+						{% else %}
+						0
+						{% endif %}
+						</strong>
+					</td>
+					{% for station,d in summaryData.stationData.items %}
+					<td>
+						<strong>
+						{% if d.monthly_donors %}
+						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo {{ station }} Monthly Donors&{% endif %}list={{ d.monthly_entries }}">{{ d.monthly_donors }} / {{ d.monthly_dollars | prepend_dollars }}</a>
+						{% else %}
+						0
+						{% endif %}
+						</strong>
+					</td>
+					{% endfor %}
+				</tr>
+				<tr>
+					<th class="active">Single Donors</th>
+					<td>
+						<strong>
+						{% if summaryData.single_donors %}
+						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Single Donors&{% endif %}list={{ summaryData.single_entries }}">{{ summaryData.single_donors }} / {{ summaryData.single_dollars | prepend_dollars }}</a>
+						{% else %}
+						0
+						{% endif %}
+						</strong>
+					</td>
+					{% for station,d in summaryData.stationData.items %}
+					<td>
+						<strong>
+						{% if d.single_donors %}
+						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo {{ station }} Single Donors&{% endif %}list={{ d.single_entries }}">{{ d.single_donors }} / {{ d.single_dollars | prepend_dollars }}</a>
+						{% else %}
+						0
+						{% endif %}
+						</strong>
+					</td>
+					{% endfor %}
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	{% else %}
+	{% if summaryData.label %}
+	<h4>{{ summaryData.label }}</h4>
 	{% endif %}
+	<div class="row"><!-- brief summary -->
+	<ul>
+		<li>Total Pledges 
+			<strong>
+			{% if summaryData.total_pledges %}
+			<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Total&{% endif %}list={{ summaryData.total_entries }}">{{ summaryData.total_pledges }} / {{ summaryData.total_dollars | prepend_dollars }}</a>
+			{% else %}
+			0
+			{% endif %}
+			</strong>
+		</li>
+		<li>New Donors 
+			<strong>
+			{% if summaryData.new_donors %}
+			<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo New Donors&{% endif %}list={{ summaryData.new_entries }}">{{ summaryData.new_donors }} / {{ summaryData.new_donor_dollars | prepend_dollars }}</a>
+			{% else %}
+			0
+			{% endif %}
+			</strong>
+		</li>
+		<li>Monthly Donors 
+			<strong>
+			{% if summaryData.monthly_donors %}
+			<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Monthly Donors&{% endif %}list={{ summaryData.monthly_entries }}">{{ summaryData.monthly_donors }} / {{ summaryData.monthly_dollars | prepend_dollars }}</a>
+			{% else %}
+			0
+			{% endif %}
+			</strong>
+		</li>
+		<li>Single Donors 
+			<strong>
+			{% if summaryData.single_donors %}
+			<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Single Donors&{% endif %}list={{ summaryData.single_entries }}">{{ summaryData.single_donors }} / {{ summaryData.single_dollars | prepend_dollars }}</a>
+			{% else %}
+			0
+			{% endif %}
+			</strong>
+		</li>
+	</ul>
+	</div>
+	{% endif %}
+	
+	<!-- begin tags -->
+	<div class="row tags"> 
+	{%for tag, tagdata in summaryData.tags.items %}
+		<div class="tag" title="{{ tag }}: {{ tagdata.1 | prepend_dollars }}"><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo tagged {{ tagdata.0 }}&{% endif %}list={{ tagdata.2 }}">{{ tag }}</a></div>
+	{% endfor %}
+	</div>
+</div>
+<!-- end of summary -->

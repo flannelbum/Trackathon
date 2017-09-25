@@ -28,3 +28,14 @@
 input[type="checkbox"] {
   transform:scale(2, 2);
 }
+
+th, td {
+    text-align: center;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.summarytable th {
+	text-align:right;
+	width:200px;
+}

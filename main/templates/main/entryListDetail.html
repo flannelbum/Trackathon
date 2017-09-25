@@ -1,27 +1,19 @@
 {% extends 'main/index.html' %}
 {% block title %}Entry List Detail - {% if label %}{{ label }}{% endif %}{% endblock %}
 {% block content %}
-<!-- START Entry listing -->
 {% if label %}<h1>{{ label }}</h1>{% endif %}
 <div class="container-fluid">
-
 	{% if summaryData %}
-	
-		{% if summaryData.stationData %}
-			{%with data=summaryData.stationData%}
-				{%for s,i in data.items %}<br/>--{{s}}--{{i.total_pledges}} - ${{ i.total_dollars}}{%endfor%}
-			{%endwith%}
-		{% endif %}
-		<br/><br/>
-	
-		{% include 'main/summary.html' %}
+	<div class="row">
+			{% include 'main/summary.html' %}
+	</div>
 	{% endif %}
-
- 	<div class="panel-group" id="accordion">
-  		{% include 'main/multiple_pledges.html' %}
-	 </div>
+	<div class="row">
+	 	<div class="panel-group" id="accordion">
+	  		{% include 'main/multiple_pledges.html' %}
+		 </div>
+	</div>
 </div>
-<!--END Entry listing  -->
 {% endblock %}
 
 {% block style %}
