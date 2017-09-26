@@ -18,7 +18,7 @@
 					<td>
 						<strong>
 						{% if summaryData.total_pledges %}
-						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Total&{% endif %}list={{ summaryData.total_entries }}">{{ summaryData.total_pledges }} / {{ summaryData.total_dollars | prepend_dollars }}</a>
+						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label | urlencode }}%20%C2%BB%20Total&{% endif %}list={{ summaryData.total_entries }}">{{ summaryData.total_pledges }} / {{ summaryData.total_dollars | prepend_dollars }}</a>
 						{% else %}
 						0
 						{% endif %}
@@ -28,7 +28,7 @@
 					<td>
 						<strong>
 						{% if d.total_pledges %}
-						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo {{ station }} Total&{% endif %}list={{ d.total_entries }}">{{ d.total_pledges }} / {{ d.total_dollars | prepend_dollars }}</a>
+						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label | urlencode }}%20%C2%BB%20{{ station }}%20Total&{% endif %}list={{ d.total_entries }}">{{ d.total_pledges }} / {{ d.total_dollars | prepend_dollars }}</a>
 						{% else %}
 						0
 						{% endif %}
@@ -41,7 +41,7 @@
 					<td>
 						<strong>
 						{% if summaryData.new_donors %}
-						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo New Donors&{% endif %}list={{ summaryData.new_entries }}">{{ summaryData.new_donors }} / {{ summaryData.new_donor_dollars | prepend_dollars }}</a>
+						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label | urlencode }}%20%C2%BB%20New%20Donors&{% endif %}list={{ summaryData.new_entries }}">{{ summaryData.new_donors }} / {{ summaryData.new_donor_dollars | prepend_dollars }}</a>
 						{% else %}
 						0
 						{% endif %}
@@ -51,7 +51,7 @@
 					<td>
 						<strong>
 						{% if d.new_donors %}
-						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo {{ station }} New Donors&{% endif %}list={{ d.new_entries }}">{{ d.new_donors }} / {{ d.new_donor_dollars | prepend_dollars }}</a>
+						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label | urlencode }}%20%C2%BB%20{{ station }}%20New%20Donors&{% endif %}list={{ d.new_entries }}">{{ d.new_donors }} / {{ d.new_donor_dollars | prepend_dollars }}</a>
 						{% else %}
 						0
 						{% endif %}
@@ -64,7 +64,7 @@
 					<td>
 						<strong>
 						{% if summaryData.monthly_donors %}
-						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Monthly Donors&{% endif %}list={{ summaryData.monthly_entries }}">{{ summaryData.monthly_donors }} / {{ summaryData.monthly_dollars | prepend_dollars }}</a>
+						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label | urlencode }}%20%C2%BB%20Monthly%20Donors&{% endif %}list={{ summaryData.monthly_entries }}">{{ summaryData.monthly_donors }} / {{ summaryData.monthly_dollars | prepend_dollars }}</a>
 						{% else %}
 						0
 						{% endif %}
@@ -74,7 +74,7 @@
 					<td>
 						<strong>
 						{% if d.monthly_donors %}
-						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo {{ station }} Monthly Donors&{% endif %}list={{ d.monthly_entries }}">{{ d.monthly_donors }} / {{ d.monthly_dollars | prepend_dollars }}</a>
+						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label | urlencode }}%20%C2%BB%20{{ station }}%20Monthly%20Donors&{% endif %}list={{ d.monthly_entries }}">{{ d.monthly_donors }} / {{ d.monthly_dollars | prepend_dollars }}</a>
 						{% else %}
 						0
 						{% endif %}
@@ -87,7 +87,7 @@
 					<td>
 						<strong>
 						{% if summaryData.single_donors %}
-						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Single Donors&{% endif %}list={{ summaryData.single_entries }}">{{ summaryData.single_donors }} / {{ summaryData.single_dollars | prepend_dollars }}</a>
+						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label | urlencode }}%20%C2%BB%20Single%20Donors&{% endif %}list={{ summaryData.single_entries }}">{{ summaryData.single_donors }} / {{ summaryData.single_dollars | prepend_dollars }}</a>
 						{% else %}
 						0
 						{% endif %}
@@ -97,7 +97,7 @@
 					<td>
 						<strong>
 						{% if d.single_donors %}
-						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo {{ station }} Single Donors&{% endif %}list={{ d.single_entries }}">{{ d.single_donors }} / {{ d.single_dollars | prepend_dollars }}</a>
+						<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label | urlencode }}%20%C2%BB%20{{ station }}%20Single%20Donors&{% endif %}list={{ d.single_entries }}">{{ d.single_donors }} / {{ d.single_dollars | prepend_dollars }}</a>
 						{% else %}
 						0
 						{% endif %}
@@ -117,7 +117,7 @@
 		<li>Total Pledges 
 			<strong>
 			{% if summaryData.total_pledges %}
-			<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Total&{% endif %}list={{ summaryData.total_entries }}">{{ summaryData.total_pledges }} / {{ summaryData.total_dollars | prepend_dollars }}</a>
+			<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label | urlencode }}%20%C2%BB%20Total&{% endif %}list={{ summaryData.total_entries }}">{{ summaryData.total_pledges }} / {{ summaryData.total_dollars | prepend_dollars }}</a>
 			{% else %}
 			0
 			{% endif %}
@@ -126,7 +126,7 @@
 		<li>New Donors 
 			<strong>
 			{% if summaryData.new_donors %}
-			<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo New Donors&{% endif %}list={{ summaryData.new_entries }}">{{ summaryData.new_donors }} / {{ summaryData.new_donor_dollars | prepend_dollars }}</a>
+			<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label | urlencode }}%20%C2%BB%20New%20Donors&{% endif %}list={{ summaryData.new_entries }}">{{ summaryData.new_donors }} / {{ summaryData.new_donor_dollars | prepend_dollars }}</a>
 			{% else %}
 			0
 			{% endif %}
@@ -135,7 +135,7 @@
 		<li>Monthly Donors 
 			<strong>
 			{% if summaryData.monthly_donors %}
-			<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Monthly Donors&{% endif %}list={{ summaryData.monthly_entries }}">{{ summaryData.monthly_donors }} / {{ summaryData.monthly_dollars | prepend_dollars }}</a>
+			<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label | urlencode }}%20%C2%BB%20Monthly%20Donors&{% endif %}list={{ summaryData.monthly_entries }}">{{ summaryData.monthly_donors }} / {{ summaryData.monthly_dollars | prepend_dollars }}</a>
 			{% else %}
 			0
 			{% endif %}
@@ -144,7 +144,7 @@
 		<li>Single Donors 
 			<strong>
 			{% if summaryData.single_donors %}
-			<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo Single Donors&{% endif %}list={{ summaryData.single_entries }}">{{ summaryData.single_donors }} / {{ summaryData.single_dollars | prepend_dollars }}</a>
+			<a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label | urlencode }}%20%C2%BB%20Single%20Donors&{% endif %}list={{ summaryData.single_entries }}">{{ summaryData.single_donors }} / {{ summaryData.single_dollars | prepend_dollars }}</a>
 			{% else %}
 			0
 			{% endif %}
@@ -157,7 +157,7 @@
 	<!-- begin tags -->
 	<div class="row tags"> 
 	{%for tag, tagdata in summaryData.tags.items %}
-		<div class="tag" title="{{ tag }}: {{ tagdata.1 | prepend_dollars }}"><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label }} &raquo tagged {{ tagdata.0 }}&{% endif %}list={{ tagdata.2 }}">{{ tag }}</a></div>
+		<div class="tag" title="{{ tag }}: {{ tagdata.1 | prepend_dollars }}"><a href="/entryListDetail/?{% if summaryData.label %}label={{ summaryData.label | urlencode }}%20%C2%BB%20tagged%20{{ tagdata.0 }}&{% endif %}list={{ tagdata.2 }}">{{ tag }}</a></div>
 	{% endfor %}
 	</div>
 </div>
