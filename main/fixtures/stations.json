@@ -1,0 +1,51 @@
+[{
+		"model" : "main.station",
+		"pk" : 1,
+		"fields" : {
+			"name" : "89.7 - Toledo-Bowling Green",
+			"callsign" : "WNOC"
+		}
+	}, {
+		"model" : "main.station",
+		"pk" : 2,
+		"fields" : {
+			"name" : "104.1 - Fostoria",
+			"callsign" : "WLBJ"
+		}
+	}, {
+		"model" : "main.station",
+		"pk" : 3,
+		"fields" : {
+			"name" : "89.9 - Edon-Bryan",
+			"callsign" : "WRRO"
+		}
+	}, {
+		"model" : "main.station",
+		"pk" : 4,
+		"fields" : {
+			"name" : "90.9 - Willard-Shelby",
+			"callsign" : "WSHB"
+		}
+	}, {
+		"model" : "main.station",
+		"pk" : 5,
+		"fields" : {
+			"name" : "89.5 - Mansfield-Lexington",
+			"callsign" : "WFOT"
+		}
+	}, {
+		"model" : "main.station",
+		"pk" : 6,
+		"fields" : {
+			"name" : "88.1 - Sandusky-Port Clinton",
+			"callsign" : "WHRQ"
+		}
+	}, {
+		"model" : "main.station",
+		"pk" : 7,
+		"fields" : {
+			"name" : "Online/WEB",
+			"callsign" : "WEB"
+		}
+	}
+]
