@@ -70,7 +70,9 @@ class PledgeEntryForm(forms.Form):
         widget=TagAutocomplete(
             attrs={'autocomplete':'off'}) )
     def clean_tags(self):
-        return self.cleaned_data['tags']
+        # add a comma so spaced tags from form entry will be counted as a single tag
+        tags = self.cleaned_data['tags'] + ','
+        return tags
         
     
     comment = forms.CharField(
