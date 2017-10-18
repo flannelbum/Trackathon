@@ -90,13 +90,13 @@ def generateRandomPledge(date, create_entry):
         
         
         
-def generateDay(year, month, day, count):
-    
-    date = timezone.datetime(year, month, day)
-    for hour in range(6,12):
-        date = timezone.datetime.combine(date, )
-        for count in range(0,count):
-            generateRandomPledge(date)
+# def generateDay(year, month, day, count):
+#     
+#     date = timezone.datetime(year, month, day)
+#     for hour in range(6,12):
+#         date = timezone.datetime.combine(date, )
+#         for count in range(0,count):
+#             generateRandomPledge(date)
 
 
 
