@@ -1,10 +1,14 @@
 import datetime
-import random
+from random import choice, randint, sample
 
 from django.conf import settings
+from django.utils import lorem_ipsum, timezone
 
 from main.forms import PledgeEntryForm
-from main.models import Station
+from main.models import Pledge, Station
+from tagging.models import Tag
+
+
 
 
 def int_or_0(value):
@@ -16,12 +20,93 @@ def int_or_0(value):
         return 0 
 
 
+
 def getRandomPledgeForm():
+    form = PledgeEntryForm()
+    entry = generateRandomPledge(None, False)
+    
+    form.firstname = entry['firstname']
+    form.lastname = entry['lastname']
+    form.city = entry['city']
+    form.is_first_time_donor = entry['is_first_time_donor']
+    form.is_monthly = entry['is_monthly']
+    form.amount = entry['amount']
+    form.station = entry['station']
+    form.tags = entry['tags']
+    form.comment = entry['comment']
+    
+    return form
+
+    
+    
+def generateRandomPledge(date, create_entry):
+    
+    if date == None:
+        date = timezone.now()
+    
+    # Pool of values
+    firstnames = ['John', 'Paul', 'George', 'Ringo', 'Christopher', 'David', 'Jane', 'Julia', 'Prudence', 'Cindy', 'Marge', 'Homer', 'Bart', 'Lisa', 'Maggie', 'Donna', 'Ron', 'Sean', 'Melanie', 'Colleen', 'Liam', 'Alan', 'Noel', 'Lilly', 'Mike', 'Terry', 'Jason', 'Jill', 'Tim']
+    lastnames = ['Smith', 'Johnson', 'Davidson', 'Schwartz', 'Doe', 'Miller', 'Washington', 'Jefferson', 'Jones', 'Mayhew', 'Robertson', 'Dinkle', 'Westinghouse', 'Burns', 'Simpson', 'Harrison', 'Starr', 'McCartney', 'Lennon']
+    cities = ['Toledo', 'Perrysburg', 'Maumee', 'Port Clinton', 'Wallbridge', 'Sylvania', 'Holland', 'Swanton', 'Millbury', 'Rossford', 'Northwood', 'Lime City', 'Monclova', 'Genoa', ]
+   
+    try:   
+        tags = ",".join(sample(list(Tag.objects.all().values_list('name', flat=True)),2))
+    except(ValueError):
+        print('Tag issue.  No tags in system?')
+        tags = ''
+
+    entrydict = {
+        'create_date': date,
+        'firstname': str(choice(firstnames)),
+        'lastname': str(choice(lastnames)),
+        'city': str(choice(cities)),
+        'amount': randint(1,70),
+        'is_first_time_donor': choice([True, False]),
+        'is_monthly': choice([True, False]),
+        'station': choice(Station.objects.all()),
+        'tags': tags,
+        }
+    entrydict['comment'] = 'Randomly generated comment for ' + entrydict['firstname'] + ' ' + entrydict['lastname'] + ': ' + lorem_ipsum.words(randint(5,75), False)
+    
+    if create_entry:
+        # Generate entry            
+        entry = Pledge(
+            create_date = entrydict['create_date'],
+            firstname = entrydict['firstname'],
+            lastname = entrydict['lastname'],
+            city = entrydict['city'],
+            amount = entrydict['amount'],
+            is_first_time_donor = entrydict['is_first_time_donor'],
+            is_monthly = entrydict['is_monthly'],
+            station = entrydict['station'],
+            comment = entrydict['comment']
+            )
+        # tags are special.  Have to have an entry before we can tag it.
+        entry.save()
+        entry.tags = tags
+        entry.save()
+        
+    return entrydict
+        
+        
+        
+def generateDay(year, month, day, count):
+    
+    date = timezone.datetime(year, month, day)
+    for hour in range(6,12):
+        date = timezone.datetime.combine(date, )
+        for count in range(0,count):
+            generateRandomPledge(date)
+
+
+
+
+def getRandomPledgeForm_old():
     # http://stackoverflow.com/questions/3540288/how-do-i-read-a-random-line-from-one-file-in-python
     # firstname,lastname,city,ftdonor,beenthanked,amount,singleormonthly,callsign,parish,groupcallout,comment
     myfile = settings.BASE_DIR + '/main/static/main/randomData.csv'
     lines = open(myfile).read().splitlines()
-    myline =random.choice(lines)
+    myline = choice(lines)
 
     form = PledgeEntryForm()
     myline = myline.split(',')
@@ -70,3 +155,18 @@ def prettydate(d):
         return '1 hour ago'
     else:
         return '{} hours ago'.format(s/3600)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+

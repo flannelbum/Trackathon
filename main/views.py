@@ -323,6 +323,7 @@ def pledgeEntry(request):
         form.fields["is_first_time_donor"].initial = myform.is_first_time_donor
         form.fields["is_monthly"].initial = myform.is_monthly
         form.fields["station"].initial = myform.station
+        form.fields["tags"].initial = myform.tags
         form.fields["comment"].initial = myform.comment
 
     return render(request, 'main/pledgeEntry.html', { 'form': form, 'entries': entries })
