@@ -1,4 +1,5 @@
-import datetime
+#import datetime
+from django.utils import timezone
 
 from django.db import models
 from tagging.registry import register
@@ -28,7 +29,7 @@ class Pledge(models.Model):
     is_first_time_donor = models.BooleanField(default=False)
     is_thanked = models.BooleanField(default=False)
     is_monthly = models.BooleanField(default=False)
-    create_date = models.DateTimeField(default=datetime.datetime.now)
+    create_date = models.DateTimeField(default=timezone.now)
     station = models.ForeignKey(Station, on_delete=models.PROTECT, null=True)
     city = models.CharField(max_length=35)
     comment = models.TextField()
