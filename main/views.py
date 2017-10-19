@@ -90,11 +90,8 @@ def report(request):
     
     
 def date_hour(_datetime):
-    #09/14/17 05 PM
-    #return _datetime.strftime("%x %I %p")
-    #05:00 PM
     _dt = _datetime.astimezone( pytz.timezone( settings.TIME_ZONE))
-    return _dt.strftime("%I:00 %p")    
+    return _dt.strftime("%I:00 %p") #ex: 05:00 PM
 
 def hourlyBreakdown(entries):
     hbd = OrderedDict()
@@ -134,8 +131,8 @@ def decode_entryIDs(encodedstring):
     decodedentryidstring = urlsafe_b64decode(encodedstring.encode('ascii'))
     
     idlist = decodedentryidstring.split(b',')
-    testentries = Pledge.objects.filter(id__in=idlist)
-    return testentries
+    entries = Pledge.objects.filter(id__in=idlist)
+    return entries
       
   
 def get_taglist(entries, topnum):
