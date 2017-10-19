@@ -19,7 +19,7 @@ from main.models import Pledge, Station
 def dashboard(request):
     try:
         context = {}
-        context['overall_totals_summaryData'] = get_summaryData( "Overall Totals", Pledge.objects.all(), None )
+        context['overall_totals_summaryData'] = get_summaryData( "Campaign Overall", Pledge.objects.all(), None )
         
         # get latest entry
         latestentry = Pledge.objects.all().latest('create_date')
@@ -27,11 +27,11 @@ def dashboard(request):
         
         # get all entries in the same day as latest
         day_entries = Pledge.objects.filter(create_date__date=( latestentry.create_date ))
-        context['latest_day_summaryData'] = get_summaryData( "Latest Day Totals", day_entries, None)
+        context['latest_day_summaryData'] = get_summaryData( "Current Day", day_entries, None)
         
         # all entires for the latest hour
         latest_entries = get_entries_in_same_hour_as(latestentry)
-        context['latest_hour_summaryData'] = get_summaryData( "Latest Hour Totals", latest_entries, None) 
+        context['latest_hour_summaryData'] = get_summaryData( "Current Hour", latest_entries, None) 
         
         # all entires for the previous hour
         
@@ -44,7 +44,7 @@ def dashboard(request):
         try:
             previous_entry = Pledge.objects.filter(create_date__lte=olderthan).latest('create_date')
             previous_entries = get_entries_in_same_hour_as(previous_entry)
-            context['previous_hour_summaryData'] = get_summaryData( "Previous Hour Totals", previous_entries, None)
+            context['previous_hour_summaryData'] = get_summaryData( "Previous Hour", previous_entries, None)
         except Pledge.DoesNotExist:
             pass
         

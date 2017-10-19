@@ -9,6 +9,13 @@
 		<div class="row collapse in" id="collapse">
 			<div id="summary">
 				<div class="col-md-3">
+					<div id="overall_totals_summaryData">
+						{% with summaryData=overall_totals_summaryData %}
+						{% include 'main/summary.html' %}
+						{% endwith %}
+					</div>
+				</div>
+				<div class="col-md-3">
 					<div id="summary_day">
 						{% with summaryData=latest_day_summaryData %}
 						{% include 'main/summary.html' %}
