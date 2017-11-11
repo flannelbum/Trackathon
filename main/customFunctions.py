@@ -1,13 +1,14 @@
-import datetime
+from datetime import datetime
+from pytz import timezone
+
 from random import choice, randint, sample
 
 from django.conf import settings
-from django.utils import lorem_ipsum, timezone
+from django.utils import lorem_ipsum
 
 from main.forms import PledgeEntryForm
 from main.models import Pledge, Station
 from tagging.models import Tag
-
 
 
 
@@ -18,7 +19,6 @@ def int_or_0(value):
         return int(value)
     except:
         return 0 
-
 
 
 def getRandomPledgeForm():
@@ -42,7 +42,7 @@ def getRandomPledgeForm():
 def generateRandomPledge(date, create_entry):
     
     if date == None:
-        date = timezone.now()
+        date = datetime.now()
     
     # Pool of values
     firstnames = ['John', 'Paul', 'George', 'Ringo', 'Christopher', 'David', 'Jane', 'Julia', 'Prudence', 'Cindy', 'Marge', 'Homer', 'Bart', 'Lisa', 'Maggie', 'Donna', 'Ron', 'Sean', 'Melanie', 'Colleen', 'Liam', 'Alan', 'Noel', 'Lilly', 'Mike', 'Terry', 'Jason', 'Jill', 'Tim']
@@ -90,15 +90,11 @@ def generateRandomPledge(date, create_entry):
         
         
         
-# def generateDay(year, month, day, count):
-#     
-#     date = timezone.datetime(year, month, day)
-#     for hour in range(6,12):
-#         date = timezone.datetime.combine(date, )
-#         for count in range(0,count):
-#             generateRandomPledge(date)
-
-
+def generateDay(year, month, day):
+    localtz = timezone( settings.TIME_ZONE)
+    for hour in range(5,20):
+        for minute in range(0,60):
+            generateRandomPledge(localtz.localize(datetime(year, month, day, hour, minute, 0)),True)
 
 
 def getRandomPledgeForm_old():
@@ -155,9 +151,6 @@ def prettydate(d):
         return '1 hour ago'
     else:
         return '{} hours ago'.format(s/3600)
-    
-    
-    
     
     
     
