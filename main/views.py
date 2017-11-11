@@ -329,6 +329,13 @@ def pledgeEntry(request):
         # tags are special.  Have to have an entry before we can tag it.
         entry.save()
         entry.tags = form.cleaned_data['tags']
+        
+        # Auto-add Apostle tag on entries that are 1000+ on entry
+        if entry.amount >= 1000:
+            taglist = list(entry.tags.values_list('name', flat=True))
+            tags = ", Apostle, ".join(taglist) 
+            entry.tags = tags
+        
         entry.save()
         
         form = PledgeEntryForm(None)
