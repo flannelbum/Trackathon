@@ -29,11 +29,11 @@ def dashboard(request):
         day_entries = Pledge.objects.filter(create_date__date=( latestentry.create_date ))
         context['latest_day_summaryData'] = get_summaryData( "Current Day", day_entries, None)
         
-        # all entires for the latest hour
+        # all entries for the latest hour
         latest_entries = get_entries_in_same_hour_as(latestentry)
         context['latest_hour_summaryData'] = get_summaryData( "Current Hour", latest_entries, None) 
         
-        # all entires for the previous hour
+        # all entries for the previous hour
         
         if latestentry.create_date.hour > 0:
             olderthan = datetime.datetime.combine( latestentry.create_date.date(), datetime.time( latestentry.create_date.hour -1, 59, 59, 999999, tzinfo=pytz.UTC))
@@ -48,7 +48,7 @@ def dashboard(request):
         except Pledge.DoesNotExist:
             pass
         
-        # initial entries context for the acccordian list
+        # initial entries context for the accordion list
         context['entries'] = Pledge.objects.all().order_by('-id')[:15]
         return render(request, 'main/dashboard.html', context)
     
@@ -99,11 +99,8 @@ def hourlyBreakdown(entries):
     groups = itertools.groupby(entries, lambda x:date_hour( x.create_date)) 
     #since groups is an iterator and not a list you have not yet traversed the list
     for group,matches in groups: #now you are traversing the list ...
-#         print group,"TTL:",sum(1 for _ in matches)
         hrlyids = []
-        count = 0
         for entry in matches:
-            count = count + 1
             hrlyids.append(entry.id)
         qs = Pledge.objects.filter(id__in=hrlyids)
         
@@ -115,41 +112,65 @@ def hourlyBreakdown(entries):
         hbd[group] = {'count': len(hrlyids), 'summaryData': get_summaryData(label, qs, None), 'entries': qs}
          
     return hbd
-    
-  
-def encode_entryIDs(entries):
-    try:
-        entryids = [str(entry.id) for entry in entries]
-        entryidstring = ",".join(entryids) 
-        
-        encodedentryidstring = urlsafe_b64encode(entryidstring.encode())
-        return encodedentryidstring
-    except:
-        return None
-  
-def decode_entryIDs(encodedstring):
-    decodedentryidstring = urlsafe_b64decode(encodedstring.encode('ascii'))
-    
-    idlist = decodedentryidstring.split(b',')
-    entries = Pledge.objects.filter(id__in=idlist)
+
+
+import pickle
+def encode_entries(entries):
+    entry_queryset_pickle = pickle.dumps(entries.query)
+    encoded_pickle = urlsafe_b64encode(entry_queryset_pickle)
+    return encoded_pickle
+
+def decode_entries(encoded_pickle):
+    entry_queryset_pickle = urlsafe_b64decode(encoded_pickle)
+    entry_queryset = pickle.loads(entry_queryset_pickle)
+    entries = Pledge.objects.all()
+    entries.query = entry_queryset
     return entries
-      
-  
+             
+
+from django.db.utils import OperationalError  
 def get_taglist(entries, topnum):
+    
+    bool(entries) # will see issues working with the queryset without this 
     taglist = OrderedDict()
     
-    tags = Tag.objects.usage_for_queryset(entries, counts=True, min_count=None)
-    tags.sort(key=lambda x: x.count, reverse=True)
-    for tag in tags:
-        tagged = TaggedItem.objects.get_by_model(entries, tag)
-        taglist[tag.count.__str__() + "-" + tag.name] = tag.name, tagged.aggregate(Sum('amount'))['amount__sum'], encode_entryIDs(tagged)
+    if entries == None:
+        entries = Pledge.objects.all()
+    
+    try:
+        tags = Tag.objects.usage_for_queryset(entries, counts=True, min_count=None)
+        tags.sort(key=lambda x: x.count, reverse=True)
+        
+        for tag in tags:
+            tagged = TaggedItem.objects.get_by_model(entries, tag)       
+            taglist[tag.count.__str__() + "-" + tag.name] = tag.name, tagged.aggregate(Sum('amount'))['amount__sum'], encode_entries(tagged)
+        
+        if topnum != None:
+            int(topnum)
+            while len(taglist) > topnum:
+                taglist.popitem()
             
-    if topnum != None:
-        int(topnum)
-        while len(taglist) > topnum:
-            taglist.popitem()
-            
-    return taglist
+        return taglist
+    
+    except OperationalError: 
+        # re-author entries by id versus tags as the OperationalError here should be:
+        #  django.db.utils.OperationalError: ambiguous column name: tagging_taggeditem.content_type_id
+        #
+        # Example of broken query from an entries queryset that causes this exception (for future rainy days or bug fixing)
+        # the query:
+        # SELECT "main_pledge"."id", "main_pledge"."amount", "main_pledge"."firstname", "main_pledge"."lastname", "main_pledge"."is_first_time_donor", "main_pledge"."is_thanked", "main_pledge"."is_monthly", "main_pledge"."create_date", "main_pledge"."station_id", "main_pledge"."city", "main_pledge"."comment" FROM "main_pledge" , "tagging_taggeditem" , "tagging_taggeditem" WHERE (("tagging_taggeditem".content_type_id = 2) AND ("tagging_taggeditem".tag_id = 5) AND ("main_pledge"."id" = "tagging_taggeditem".object_id) AND ("tagging_taggeditem".content_type_id = 2) AND ("tagging_taggeditem".tag_id = 5) AND ("main_pledge"."id" = "tagging_taggeditem".object_id))
+        #
+        # a pickle of the query:
+        # b'\x80\x03cdjango.db.models.sql.query\nQuery\nq\x00)\x81q\x01}q\x02(X\x05\x00\x00\x00modelq\x03cmain.models\nPledge\nq\x04X\x0e\x00\x00\x00alias_refcountq\x05}q\x06(X\x0b\x00\x00\x00main_pledgeq\x07K\x00X\x12\x00\x00\x00tagging_taggeditemq\x08K\x01uX\t\x00\x00\x00alias_mapq\tccollections\nOrderedDict\nq\n)Rq\x0bh\x07cdjango.db.models.sql.datastructures\nBaseTable\nq\x0c)\x81q\r}q\x0e(X\n\x00\x00\x00table_nameq\x0fh\x07X\x0b\x00\x00\x00table_aliasq\x10h\x07ubsX\x10\x00\x00\x00external_aliasesq\x11cbuiltins\nset\nq\x12]q\x13\x85q\x14Rq\x15X\t\x00\x00\x00table_mapq\x16}q\x17(h\x07]q\x18h\x07ah\x08]q\x19h\x08auX\x0c\x00\x00\x00default_colsq\x1a\x88X\x10\x00\x00\x00default_orderingq\x1b\x88X\x11\x00\x00\x00standard_orderingq\x1c\x88X\x06\x00\x00\x00selectq\x1d]q\x1eX\x06\x00\x00\x00tablesq\x1f]q (h\x07h\x08eX\x05\x00\x00\x00whereq!cdjango.db.models.sql.where\nWhereNode\nq")\x81q#}q$(X\x08\x00\x00\x00childrenq%]q&(cdjango.db.models.sql.where\nExtraWhere\nq\')\x81q(}q)(X\x04\x00\x00\x00sqlsq*]q+(X)\x00\x00\x00"tagging_taggeditem".content_type_id = %sq,X \x00\x00\x00"tagging_taggeditem".tag_id = %sq-X3\x00\x00\x00"main_pledge"."id" = "tagging_taggeditem".object_idq.eX\x06\x00\x00\x00paramsq/]q0(K\x02K\x05eubh\')\x81q1}q2(h*]q3(X)\x00\x00\x00"tagging_taggeditem".content_type_id = %sq4X \x00\x00\x00"tagging_taggeditem".tag_id = %sq5X3\x00\x00\x00"main_pledge"."id" = "tagging_taggeditem".object_idq6eh/]q7(K\x02K\x05eubeX\t\x00\x00\x00connectorq8X\x03\x00\x00\x00ANDq9X\x07\x00\x00\x00negatedq:\x89X\x12\x00\x00\x00contains_aggregateq;\x89ubX\x0b\x00\x00\x00where_classq<h"X\x08\x00\x00\x00group_byq=NX\x08\x00\x00\x00order_byq>]q?X\x08\x00\x00\x00low_markq@K\x00X\t\x00\x00\x00high_markqANX\x08\x00\x00\x00distinctqB\x89X\x0f\x00\x00\x00distinct_fieldsqC]qDX\x11\x00\x00\x00select_for_updateqE\x89X\x18\x00\x00\x00select_for_update_nowaitqF\x89X\x1d\x00\x00\x00select_for_update_skip_lockedqG\x89X\x0e\x00\x00\x00select_relatedqH\x89X\r\x00\x00\x00values_selectqI]qJX\x0c\x00\x00\x00_annotationsqKNX\x16\x00\x00\x00annotation_select_maskqLNX\x18\x00\x00\x00_annotation_select_cacheqMNX\t\x00\x00\x00max_depthqNK\x05X\n\x00\x00\x00combinatorqONX\x0e\x00\x00\x00combinator_allqP\x89X\x10\x00\x00\x00combined_queriesqQ)X\x06\x00\x00\x00_extraqRNX\x11\x00\x00\x00extra_select_maskqSNX\x13\x00\x00\x00_extra_select_cacheqTNX\x0c\x00\x00\x00extra_tablesqUh\x08X\x12\x00\x00\x00tagging_taggeditemqV\x86qWX\x0e\x00\x00\x00extra_order_byqX)X\x10\x00\x00\x00deferred_loadingqYh\x12]qZ\x85q[Rq\\\x88\x86q]X\x0c\x00\x00\x00used_aliasesq^h\x12]q_\x85q`RqaX\x10\x00\x00\x00filter_is_stickyqb\x89X\x08\x00\x00\x00subqueryqc\x89X\x07\x00\x00\x00contextqd}qeX\n\x00\x00\x00_forced_pkqf\x89ub.'
+        
+        idlist = [str(entry.id) for entry in entries]            
+        entries = Pledge.objects.filter(id__in=idlist)
+        
+        # try again 
+        taglist = get_taglist(entries, topnum)
+        return taglist
+     
+    return None
 
 
 def get_summaryData(label, entries, stations):
@@ -158,22 +179,22 @@ def get_summaryData(label, entries, stations):
     if entries == None:
         entries = Pledge.objects.all()
 
-    total_entries = encode_entryIDs(entries)
+    total_entries = encode_entries(entries)
     total_dollars = entries.aggregate(Sum('amount'))['amount__sum']
     total_pledges = entries.count()
     
     nd_entries = entries.filter(is_first_time_donor__exact=True)
-    new_entries = encode_entryIDs(nd_entries)
+    new_entries = encode_entries(nd_entries)
     new_donors = nd_entries.count()
     new_donor_dollars = nd_entries.aggregate(Sum('amount'))['amount__sum']
     
     md_entries = entries.filter(is_monthly__exact=True)
-    monthly_entries = encode_entryIDs(md_entries)
+    monthly_entries = encode_entries(md_entries)
     monthly_donors = md_entries.count()
     monthly_dollars = md_entries.aggregate(Sum('amount'))['amount__sum']
     
     sd_entries = entries.filter(is_monthly__exact=False)
-    single_entries = encode_entryIDs(sd_entries)
+    single_entries = encode_entries(sd_entries)
     single_donors = sd_entries.count()
     single_dollars = sd_entries.aggregate(Sum('amount'))['amount__sum']
     
@@ -187,6 +208,7 @@ def get_summaryData(label, entries, stations):
         tags = get_taglist(entries, None)
     else:
         tags = get_taglist(entries, 7)
+
     
     summaryData = {
         'label': label,
@@ -213,11 +235,13 @@ def get_summaryData(label, entries, stations):
 
   
 def entryListDetail(request):
-    entries = decode_entryIDs(request.GET.get('list'))
+    entries = decode_entries(request.GET.get('list'))
+       
     label = request.GET.get('label')
     summaryData = get_summaryData(label, entries, Station.objects.all() )
     return render(request, 'main/entryListDetail.html', { 'label': label, 'summaryData': summaryData, 'entries': entries })
   
+
 
 def deletePledgeEntry(request):
         
