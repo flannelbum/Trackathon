@@ -244,20 +244,23 @@ def entryListDetail(request):
 
 
 def deletePledgeEntry(request):
+    if request.user.is_authenticated():
+        entryid = int_or_0( request.GET.get('entryid') )
         
-    entryid = int_or_0( request.GET.get('entryid') )
+        p = Pledge.objects.get(pk=entryid)
+        p.delete()    
     
-    p = Pledge.objects.get(pk=entryid)
-    p.delete()    
-
-    if 'pledgeEntry' in request.META['HTTP_REFERER']:
-        return HttpResponseRedirect('/pledgeEntry/')
-    elif 'report' in request.META['HTTP_REFERER']:
-        return HttpResponseRedirect('/report/') 
-    elif 'entryListDetail' in request.META['HTTP_REFERER']:
-        return HttpResponseRedirect('/report/')
+        if 'pledgeEntry' in request.META['HTTP_REFERER']:
+            return HttpResponseRedirect('/pledgeEntry/')
+        elif 'report' in request.META['HTTP_REFERER']:
+            return HttpResponseRedirect('/report/') 
+        elif 'entryListDetail' in request.META['HTTP_REFERER']:
+            return HttpResponseRedirect('/report/')
+        else:
+            return HttpResponseRedirect('/')
+        
     else:
-        return HttpResponseRedirect('/')
+        return None
 
     
     
@@ -331,7 +334,7 @@ def pledgeEntry(request):
         entry.tags = form.cleaned_data['tags']
         
         # Auto-add Apostle tag on entries that are 1000+ on entry
-        if entry.amount >= 1000:
+        if entry.amount > 999:
             taglist = list(entry.tags.values_list('name', flat=True))
             tags = ", Apostle, ".join(taglist) 
             entry.tags = tags

@@ -3,6 +3,11 @@
 {% block content %}
 {% if label %}<h1>{{ label }}</h1>{% endif %}
 <div class="container-fluid">
+	{% if user.is_authenticated %}
+	<div class="row">
+		<a onclick="exporttocsv()">Export to CSV</a>
+	</div>
+	{% endif %}
 	{% if summaryData %}
 	<div class="row">
 			{% include 'main/summary.html' %}
@@ -30,6 +35,16 @@
 	
 	// enable fancy effects
 	$.get("/static/main/js/entryeffects.js");
+	
+	function getURLParameter(name) {
+		return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || [null, ''])[1].replace(/\+/g, '%20')) || null;
+	}
+	
+	function exporttocsv() {
+		console.log("test");
+		window.location="/csvExport/?list=" + getURLParameter("list");
+	}
+	
 	
 </script>
 {% endblock %}

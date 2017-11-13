@@ -16,8 +16,14 @@
 		{% if entryObject.id %}
 		<input type="hidden" name="entryid" value="{{ entryid }}"/>
 		<input type="submit" value="Edit" />
+			{% if user.is_authenticated %}
+			<a href="/deletePledgeEntry/?entryid={{ entryid }}"> Delete entry</a>
+			{% endif %}
 		{% else %}
-		<input type="submit" value="Submit" /> - <a href="/pledgeEntry/?getrandom=True">Add Random</a>
+		<input type="submit" value="Submit" />
+			{% if user.is_authenticated %}
+			 - <a href="/pledgeEntry/?getrandom=True">Add Random</a>
+			{% endif %}
 		{% endif%}
 	</div>
 </form>
