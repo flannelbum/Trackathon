@@ -3,6 +3,22 @@ from django.shortcuts import render
 
 from main.models import Pledge
 from main.customFunctions import int_or_0
+from main.views import decode_entries
+
+
+
+def ajax_get_next_listDetail(request):
+    lid = int_or_0(request.GET.get('lid', None))
+    entries = decode_entries(request.GET.get('list'))
+    if lid == 0:
+        return HttpResponse(status=204)
+    if entries.count() < 1:
+        return HttpResponse(status=204)
+    if lid == entries.latest('id').id:
+        return HttpResponse(status=204)
+    
+    return render(request, 'main/multiple_pledges.html', { 'entries': entries.filter(id__gt=lid)[:15] })
+
 
 
 def ajax_get_next_entries(request):

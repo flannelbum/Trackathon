@@ -239,7 +239,7 @@ def entryListDetail(request):
        
     label = request.GET.get('label')
     summaryData = get_summaryData(label, entries, Station.objects.all() )
-    return render(request, 'main/entryListDetail.html', { 'label': label, 'summaryData': summaryData, 'entries': entries })
+    return render(request, 'main/entryListDetail.html', { 'label': label, 'summaryData': summaryData, 'entries': entries[:15] })
   
 
 
