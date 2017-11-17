@@ -32,6 +32,7 @@ def getRandomPledgeForm():
     form.is_monthly = entry['is_monthly']
     form.amount = entry['amount']
     form.station = entry['station']
+    form.phone_number = entry['phone_number']
     form.tags = entry['tags']
     form.comment = entry['comment']
     
@@ -64,6 +65,7 @@ def generateRandomPledge(date, create_entry):
         'is_first_time_donor': choice([True, False]),
         'is_monthly': choice([True, False]),
         'station': choice(Station.objects.all()),
+        'phone_number': '(419)555-' + str(choice(range(0000,9999))),
         'tags': tags,
         }
     entrydict['comment'] = 'Randomly generated comment for ' + entrydict['firstname'] + ' ' + entrydict['lastname'] + ': ' + lorem_ipsum.words(randint(5,75), False)
@@ -79,6 +81,7 @@ def generateRandomPledge(date, create_entry):
             is_first_time_donor = entrydict['is_first_time_donor'],
             is_monthly = entrydict['is_monthly'],
             station = entrydict['station'],
+            phone_number = entrydict['phone_number'],
             comment = entrydict['comment']
             )
         # tags are special.  Have to have an entry before we can tag it.

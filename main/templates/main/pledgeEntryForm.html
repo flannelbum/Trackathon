@@ -28,3 +28,13 @@
 	</div>
 </form>
 
+{% block javascript %}
+<script type="text/javascript">
+// Format the phone number as the user is typing
+// https://stackoverflow.com/questions/17980061/how-to-change-phone-number-format-in-input-as-you-type
+$("input[name='phone_number']").keyup(function() {
+    $(this).val($(this).val().replace(/^(\d{3})(\d{3})(\d)+$/, "($1)$2-$3"));
+});
+
+</script>
+{% endblock %}

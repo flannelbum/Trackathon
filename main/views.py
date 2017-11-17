@@ -276,6 +276,7 @@ def editPledgeEntry(request):
     
     if request.method == "POST":
         form = PledgeEntryForm(request.POST or None)
+        
         if form.is_valid():
                         
             p.firstname = form.cleaned_data['firstname']
@@ -285,6 +286,7 @@ def editPledgeEntry(request):
             p.is_first_time_donor = form.cleaned_data['is_first_time_donor']
             p.is_monthly = form.cleaned_data['is_monthly']
             p.station = form.cleaned_data['station']
+            p.phone_number = form.cleaned_data['phone_number']
             p.tags = form.cleaned_data['tags']
             p.comment = form.cleaned_data['comment']
             p.save()
@@ -304,9 +306,10 @@ def editPledgeEntry(request):
         form.fields["is_monthly"].initial = p.is_monthly
         form.fields["is_first_time_donor"].initial = p.is_first_time_donor
         form.fields["station"].initial = p.station
+        form.fields["phone_number"].initial = p.phone_number
         form.fields["tags"].initial = tags
         form.fields["comment"].initial = p.comment
-    
+        
     return render(request, 'main/pledgeEntry.html', { 'form': form, 'entryid': entryid, 'entryObject': p, 'entries': entries })
 
 
@@ -326,17 +329,27 @@ def pledgeEntry(request):
             is_first_time_donor=form.cleaned_data['is_first_time_donor'],
             is_monthly=form.cleaned_data['is_monthly'],
             station=form.cleaned_data['station'],
+            phone_number=form.cleaned_data['phone_number'],
             comment=form.cleaned_data['comment'],
             )
 
         # tags are special.  Have to have an entry before we can tag it.
         entry.save()
         entry.tags = form.cleaned_data['tags']
-        
+
         # Auto-add Apostle tag on entries that are 1000+ on entry
         if entry.amount > 999:
-            taglist = list(entry.tags.values_list('name', flat=True))
-            tags = ", Apostle, ".join(taglist) 
+            tags = 'Apostle, '
+            for tag in list(entry.tags.values_list('name', flat=True)):
+                tags += tag + ', '
+            entry.tags = tags
+                
+        # Auto-add BTC tag when firstname and lastname are blank
+        if not entry.firstname: 
+            if not entry.lastname:
+                tags = 'BTC, '
+                for tag in list(entry.tags.values_list('name', flat=True)):
+                    tags += tag + ', '
             entry.tags = tags
         
         entry.save()
@@ -354,6 +367,7 @@ def pledgeEntry(request):
         form.fields["is_first_time_donor"].initial = myform.is_first_time_donor
         form.fields["is_monthly"].initial = myform.is_monthly
         form.fields["station"].initial = myform.station
+        form.fields["phone_number"].initial = myform.phone_number
         form.fields["tags"].initial = myform.tags
         form.fields["comment"].initial = myform.comment
 

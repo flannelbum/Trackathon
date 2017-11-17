@@ -4,6 +4,7 @@
 {% block content %}
 <div class="container-fluid">
 	<div class="row">
+	
 		<div class="col-sm-6">
         {% if entryObject.id %}
         	<h3>Edit: {{ entryObject.amount | prepend_dollars}} - {{ entryObject.firstname }} {{ entryObject.lastname }}</h3>
@@ -17,21 +18,19 @@
   			</div>
   		{% endif %}
 		</div>
-	</div>
-</div>
-
-
-
-<div class="col-sm-6">
-	<h2>Recent Entries</h2>
-	<ul id="recenEntries" class="list-group">
-		<div class="container-fluid">
-			<div style="visibility:hidden" id="latestid">{{ latestid }}</div>
-			<div class="panel-group" id="accordion">
-				{% include 'main/multiple_pledges.html' %}
-			</div>
+	
+		<div class="col-sm-6">
+			<h2>Recent Entries</h2>
+			<ul id="recenEntries" class="list-group">
+				<div class="container-fluid">
+					<div style="visibility:hidden" id="latestid">{{ latestid }}</div>
+					<div class="panel-group" id="accordion">
+						{% include 'main/multiple_pledges.html' %}
+					</div>
+				</div>
+			</ul>
 		</div>
-	</ul>
+	</div>
 </div>
 {% endblock %}
 

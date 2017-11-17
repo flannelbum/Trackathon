@@ -1,23 +1,22 @@
 import csv
 import time
-import pytz
 
 from django.http.response import HttpResponse
-from django.conf import settings
+import pytz
+from tagging.models import Tag
 
 from main.models import Pledge
-from trackathon import settings
 from main.views import decode_entries
-from tagging.models import Tag
+from trackathon import settings
 
 
 def csvExport(request):
 
     if request.user.is_authenticated():
         
-        label = request.GET.get('label')
         entries = decode_entries(request.GET.get('list'))
         bool(entries)
+        
         try:
             tags = Tag.objects.usage_for_queryset(entries, counts=False, min_count=None)
         except:
@@ -36,7 +35,8 @@ def csvExport(request):
             'DATEADDED', 
             'AMOUNT', 
             'FIRSTNAME', 
-            'LASTNAME', 
+            'LASTNAME',
+            'PHONE_NUMBER', 
             'CITY', 
             'STATION',
             'IS_THANKED',
@@ -55,7 +55,8 @@ def csvExport(request):
                 pledge.create_date.astimezone( pytz.timezone( settings.TIME_ZONE )).strftime("%Y/%m/%d %H:%M:%S"), 
                 pledge.amount, 
                 pledge.firstname, 
-                pledge.lastname, 
+                pledge.lastname,
+                pledge.phone_number, 
                 pledge.city, 
                 pledge.station.callsign, 
                 pledge.is_thanked,

@@ -8,7 +8,25 @@ from main.models import Station
 
 class PledgeEntryForm(forms.Form):
     
+    
+    amount = forms.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        label='Amount',
+    )
+    
+    
+    phone_number = forms.CharField(
+        required=False,
+        max_length=13,
+        widget=TextInput(
+            attrs={'autocomplete':'off'}
+        ),
+    )
+    
+    
     firstname = forms.CharField(
+        required=False,
         max_length=35,
         widget=TextInput(
             attrs={'autocomplete':'off'}
@@ -20,6 +38,7 @@ class PledgeEntryForm(forms.Form):
 
 
     lastname = forms.CharField(
+        required=False,
         max_length=35,
         widget=TextInput(
             attrs={'autocomplete':'off'}
@@ -30,14 +49,8 @@ class PledgeEntryForm(forms.Form):
         return self.cleaned_data['lastname'].upper()
     
     
-    amount = forms.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        label='Amount',
-    )
-
-
     city = forms.CharField(
+        required=False,
         max_length=35,
         widget=TextInput(
             attrs={'autocomplete':'off'}
@@ -62,8 +75,11 @@ class PledgeEntryForm(forms.Form):
     )
 
 
-    station = forms.ModelChoiceField( queryset=Station.objects.all() )
-    
+    station = forms.ModelChoiceField(
+        required=False,
+        queryset=Station.objects.all() 
+    )
+   
     
     tags = TagField( 
         required=False,
