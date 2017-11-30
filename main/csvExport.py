@@ -53,7 +53,7 @@ def csvExport(request):
             
             station = ''
             if pledge.station != None:
-                pledge.station.callsign,
+                pledge.station.callsign
             
             csvrow =[
                 pledge.id, 
