@@ -50,6 +50,11 @@ def csvExport(request):
         writer.writerow(csvheader)
 
         for pledge in entries:
+            
+            station = ''
+            if pledge.station != None:
+                pledge.station.callsign,
+            
             csvrow =[
                 pledge.id, 
                 pledge.create_date.astimezone( pytz.timezone( settings.TIME_ZONE )).strftime("%Y/%m/%d %H:%M:%S"), 
@@ -58,7 +63,7 @@ def csvExport(request):
                 pledge.lastname,
                 pledge.phone_number, 
                 pledge.city, 
-                pledge.station.callsign, 
+                station, 
                 pledge.is_thanked,
                 pledge.is_first_time_donor,
                 pledge.is_monthly,
