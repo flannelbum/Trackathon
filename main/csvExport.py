@@ -42,7 +42,7 @@ def csvExport(request):
             'IS_THANKED',
             'IS_FIRST_TIME_DONOR',
             'IS_MONTHLY',
-            'COMMENT',
+            ##'COMMENT',
             ]
         for tag in tags:
             csvheader.append(str('Tag: ' + tag.name))
@@ -53,7 +53,7 @@ def csvExport(request):
             
             station = ''
             if pledge.station != None:
-                pledge.station.callsign
+                station = pledge.station.callsign
             
             csvrow =[
                 pledge.id, 
@@ -67,7 +67,7 @@ def csvExport(request):
                 pledge.is_thanked,
                 pledge.is_first_time_donor,
                 pledge.is_monthly,
-                pledge.comment,
+                ##pledge.comment,
                 ]
             for tag in tags:
                 if tag in pledge.tags:
