@@ -16,15 +16,7 @@ def csvExport(request):
         
         entries = decode_entries(request.GET.get('list'))
         bool(entries)
-        
-        try:
-            tags = Tag.objects.usage_for_queryset(entries, counts=False, min_count=None)
-        except:
-            idlist = [str(entry.id) for entry in entries]
-            bool(entries)        
-            entries = Pledge.objects.filter(id__in=idlist)
-            tags = Tag.objects.usage_for_queryset(entries, counts=False, min_count=None)
-        
+               
         filename = "TrackAThonExport_" + time.strftime("%m%d-%H%M%S") + ".csv"
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename=' + filename
@@ -44,8 +36,6 @@ def csvExport(request):
             'IS_MONTHLY',
             ##'COMMENT',
             ]
-        for tag in tags:
-            csvheader.append(str('Tag: ' + tag.name))
         
         writer.writerow(csvheader)
 
@@ -69,11 +59,10 @@ def csvExport(request):
                 pledge.is_monthly,
                 ##pledge.comment,
                 ]
-            for tag in tags:
-                if tag in pledge.tags:
-                    csvrow.append(tag.name)
-                else:
-                    csvrow.append('')
+
+            for tag in pledge.tags:
+                csvrow.append(tag.name)
+                
             writer.writerow(csvrow)
     else:
     # Return silent/404 if blank GET request
