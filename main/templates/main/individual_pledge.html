@@ -32,7 +32,10 @@
 			<div><strong>Tags:</strong> {{ tags }}</div>
 			<div><strong>Comment:</strong> {{ entry.comment }}</div>
 			<div style="text-align:center;top:10px">
-				<a href="/editPledgeEntry/?entryid={{ entry.id }}">Edit this entry</a> 
+				<a href="/bumpPledgeTime/?entryid={{ entry.id }}&direction=back&mins=9">Bump back 9 mins</a> -- 
+				<a href="/editPledgeEntry/?entryid={{ entry.id }}">Edit this entry</a> -- 
+				<a href="/bumpPledgeTime/?entryid={{ entry.id }}&direction=forward&mins=9">Bump forward 9 mins</a>
+				
 			</div>
 		</div>
 	</div>

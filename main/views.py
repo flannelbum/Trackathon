@@ -2,6 +2,7 @@ from base64 import urlsafe_b64encode, urlsafe_b64decode
 import calendar
 from collections import OrderedDict
 import datetime
+from datetime import timedelta
 import itertools
 
 from django.conf import settings
@@ -311,6 +312,26 @@ def editPledgeEntry(request):
         form.fields["comment"].initial = p.comment
         
     return render(request, 'main/pledgeEntry.html', { 'form': form, 'entryid': entryid, 'entryObject': p, 'entries': entries })
+
+
+
+def bumpPledgeTime(request):
+    entryid = int_or_0(request.GET.get('entryid'))
+    direction = request.GET.get('direction')
+    mins = int_or_0(request.GET.get('mins'))
+    
+    p = Pledge.objects.get(pk=entryid)
+    
+    if direction == 'back':
+        p.create_date = p.create_date - timedelta(minutes=mins)
+        p.save()
+    elif direction == 'forward':
+        p.create_date = p.create_date + timedelta(minutes=mins)
+        p.save()
+    else:
+        pass
+    
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
 def pledgeEntry(request):

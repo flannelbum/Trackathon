@@ -17,5 +17,6 @@ urlpatterns = [
     url(r'^ajax_thank_id/$', ajax.ajax_thank_id, name='ajax_thank_id'),
     url(r'^ajax_get_next_listDetail/$', ajax.ajax_get_next_listDetail, name='ajax_get_next_listDetail'),
     url(r'^editPledgeEntry/$', views.editPledgeEntry, name='editPledgeEntry'),
+    url(r'^bumpPledgeTime/$', views.bumpPledgeTime, name='bumpPledgeTime'),
     url(r'^csvExport/$', csvExport.csvExport, name='csvExport'),
 ]
