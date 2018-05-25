@@ -76,7 +76,7 @@ def report(request):
     
     for day in days:       
         label = calendar.day_name[day.weekday()] + ", " + str(day.month) + "/" + str(day.day) + "/" + str(day.year)
-        entries = Pledge.objects.filter(create_date__date=datetime.datetime(day.year, day.month, day.day, 0,0, tzinfo=localtz))
+        entries = Pledge.objects.filter(create_date__date=datetime.datetime(day.year, day.month, day.day, 0,0, tzinfo=localtz)).order_by('create_date')
         count = entries.count()
         
         if dayDetail == day.date().__str__():
