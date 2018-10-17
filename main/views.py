@@ -121,8 +121,16 @@ def encode_entries(entries):
     encoded_pickle = urlsafe_b64encode(entry_queryset_pickle)
     return encoded_pickle
 
+
 def decode_entries(encoded_pickle):
-    entry_queryset_pickle = urlsafe_b64decode(encoded_pickle)
+    # Updating Python to 3.7 introduced issues with urlsafe_b64decode when decoding the string we will see here.  
+    # Our incoming URL list variable looks like b'<stuff>'
+    # taking out the b' and closing ' gives us something we can work with and avoids errors like:
+    #   pickle.UnpicklingError: invalid load key, 'n'.
+    #   binascii.Error: Invalid base64-encoded string: length cannot be 1 more than a multiple of 4
+    encoded_pickle = encoded_pickle[2:-1]
+    
+    entry_queryset_pickle = urlsafe_b64decode(encoded_pickle) 
     entry_queryset = pickle.loads(entry_queryset_pickle)
     entries = Pledge.objects.all()
     entries.query = entry_queryset
