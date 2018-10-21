@@ -23,7 +23,7 @@ def ajax_get_next_listDetail(request):
 
 def ajax_get_next_entries(request):
     lid = int_or_0(request.GET.get('lid', None))
-    entries = Pledge.objects.filter(id__lt=lid).order_by('-id')[:15]
+    entries = Pledge.objects.campaign_active().filter(id__lt=lid).order_by('-id')[:15]
     return render(request, 'main/multiple_pledges.html', { 'entries': entries })
   
  
@@ -41,7 +41,7 @@ def ajax_thank_id(request):
 def ajax_retrieve_latest_entries(request):
 
     lid = int_or_0(request.GET.get('lid', None))
-    latestid = Pledge.objects.latest('id').id
+    latestid = Pledge.objects.campaign_active().latest('id').id
     maxbehind = 15  # Don't fetch more than this
     behind = latestid - lid
     
@@ -58,7 +58,7 @@ def ajax_retrieve_latest_entries(request):
         return HttpResponse("Too much to return.  ?lid= must currently be between " + str(latestid - maxbehind) + " - " + str(latestid), status=400)
       
     if latestid > lid:
-        entries = Pledge.objects.order_by('-id')[:behind:1]
+        entries = Pledge.objects.campaign_active().order_by('-id')[:behind:1]
         return render(request, 'main/multiple_pledges.html', { 'entries': entries })
     
     # # Should not make it this far but, just in case, stay quiet

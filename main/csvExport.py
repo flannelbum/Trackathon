@@ -12,7 +12,7 @@ from trackathon import settings
 
 def csvExport(request):
 
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         
         entries = decode_entries(request.GET.get('list'))
         bool(entries)

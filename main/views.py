@@ -14,20 +14,20 @@ from tagging.models import Tag, TaggedItem
 
 from main.customFunctions import getRandomPledgeForm, int_or_0
 from main.forms import PledgeEntryForm
-from main.models import Pledge, Station
+from main.models import Pledge, Station, Campaign
 
 
 def dashboard(request):
     try:
         context = {}
-        context['overall_totals_summaryData'] = get_summaryData( "Campaign Overall", Pledge.objects.all(), None )
+        context['overall_totals_summaryData'] = get_summaryData( "Campaign Overall", Pledge.objects.campaign_active().all(), None )
         
         # get latest entry
-        latestentry = Pledge.objects.all().latest('create_date')
+        latestentry = Pledge.objects.campaign_active().all().latest('create_date')
         context['lid'] = latestentry.id
         
         # get all entries in the same day as latest
-        day_entries = Pledge.objects.filter(create_date__date=( latestentry.create_date ))
+        day_entries = Pledge.objects.campaign_active().filter(create_date__date=( latestentry.create_date ))
         context['latest_day_summaryData'] = get_summaryData( "Current Day", day_entries, None)
         
         # all entries for the latest hour
@@ -43,14 +43,14 @@ def dashboard(request):
             
         # prevent exception when we're in our first hour
         try:
-            previous_entry = Pledge.objects.filter(create_date__lte=olderthan).latest('create_date')
+            previous_entry = Pledge.objects.campaign_active().filter(create_date__lte=olderthan).latest('create_date')
             previous_entries = get_entries_in_same_hour_as(previous_entry)
             context['previous_hour_summaryData'] = get_summaryData( "Previous Hour", previous_entries, None)
         except Pledge.DoesNotExist:
             pass
         
         # initial entries context for the accordion list
-        context['entries'] = Pledge.objects.all().order_by('-id')[:15]
+        context['entries'] = Pledge.objects.campaign_active().all().order_by('-id')[:15]
         return render(request, 'main/dashboard.html', context)
     
     except:
@@ -61,29 +61,74 @@ def dashboard(request):
 def get_entries_in_same_hour_as(entry):
     starttime = datetime.datetime.combine( entry.create_date.date(), datetime.time( entry.create_date.hour, 0, 0, 0, tzinfo=pytz.UTC))
     endtime = datetime.datetime.combine( starttime.date(), datetime.time( starttime.hour, 59, 59, 999999, tzinfo=pytz.UTC))
-    return Pledge.objects.filter(create_date__range=( starttime, endtime ))
-    
+    return Pledge.objects.campaign_active().filter(create_date__range=( starttime, endtime ))
     
   
+def get_campaigns():
+    campaigns = {}
+    for campaign in Campaign.objects.all():
+        campaigns[campaign.id] = campaign.name
+    return campaigns  
+  
+  
+#TODO: add authenticated decorator and login parts 
+def TATsettings(request):
+    context = {}
+    
+    if request.POST:
+        new_campaign = request.POST.get('new_campaign_name')
+        if new_campaign == "":
+            context['message'] = 'You must supply a campaign name to close the current campaign!'
+        else:
+            campaign = Campaign.objects.create(name=new_campaign)
+            for pledge in Pledge.objects.campaign_active():
+                pledge.campaign = campaign
+                pledge.save()
+            
+    context['activePledgeCount'] = Pledge.objects.campaign_active().count()
+    return render(request, 'main/settings.html', context)
+
+
 def report(request):
     
     context = {}
     daySummary = OrderedDict()
     localtz = pytz.timezone( settings.TIME_ZONE ) # https://stackoverflow.com/questions/24710233/python-convert-time-to-utc-format
-    days = Pledge.objects.datetimes('create_date', 'day', 'DESC', localtz) 
-       
+    campaignid = 0
+    
+    if request.user.is_authenticated:
+        context['campaigns'] = get_campaigns()
+    
+    if request.GET.get('campaignid') and request.user.is_authenticated:
+        campaignid = int(request.GET.get('campaignid'))
+        campaign = Campaign.objects.get(pk=campaignid)
+        context['campaign_name'] = campaign.name
+        days = Pledge.objects.campaign_past_id( campaignid ).datetimes('create_date', 'day', 'DESC', localtz)
+    else:
+        days = Pledge.objects.campaign_active().datetimes('create_date', 'day', 'DESC', localtz)
+        
     dayDetail = request.GET.get('dayDetail', None)
     
     for day in days:       
         label = calendar.day_name[day.weekday()] + ", " + str(day.month) + "/" + str(day.day) + "/" + str(day.year)
-        entries = Pledge.objects.filter(create_date__date=datetime.datetime(day.year, day.month, day.day, 0,0, tzinfo=localtz)).order_by('create_date')
+        
+        if campaignid > 0:
+            entries = Pledge.objects.campaign_past_id( campaignid ).filter(create_date__date=datetime.datetime(day.year, day.month, day.day, 0,0, tzinfo=localtz)).order_by('create_date') 
+        else:
+            entries = Pledge.objects.campaign_active().filter(create_date__date=datetime.datetime(day.year, day.month, day.day, 0,0, tzinfo=localtz)).order_by('create_date')
+        
         count = entries.count()
         
         if dayDetail == day.date().__str__():
             context['date'] = datetime.date(day.year, day.month, day.day)
             context['hourlyBreakdown'] = hourlyBreakdown(entries)
                         
-        daySummary[day.date().__str__()] = {'dayDetail': day.date().__str__(), 'label': label, 'count': count, 'summaryData': get_summaryData(label, entries, None)}
+        daySummary[day.date().__str__()] = {
+            'dayDetail': day.date().__str__(), 
+            'label': label, 
+            'count': count, 
+            'summaryData': get_summaryData(label, entries, None)
+        }
         context['daySummary'] = daySummary
         
     return render(request, 'main/report.html', context)
@@ -103,7 +148,7 @@ def hourlyBreakdown(entries):
         hrlyids = []
         for entry in matches:
             hrlyids.append(entry.id)
-        qs = Pledge.objects.filter(id__in=hrlyids)
+        qs = Pledge.objects.all().filter(id__in=hrlyids)
         
         createdate = entry.create_date
         timestring = createdate.astimezone( pytz.timezone( settings.TIME_ZONE ))
@@ -134,6 +179,7 @@ def decode_entries(encoded_pickle):
     entry_queryset = pickle.loads(entry_queryset_pickle)
     entries = Pledge.objects.all()
     entries.query = entry_queryset
+    
     return entries
              
 
@@ -183,10 +229,9 @@ def get_taglist(entries, topnum):
 
 
 def get_summaryData(label, entries, stations):
-    latestid = Pledge.objects.latest('id').id
     
     if entries == None:
-        entries = Pledge.objects.all()
+        entries = Pledge.objects.campaign_active().all()
 
     total_entries = encode_entries(entries)
     total_dollars = entries.aggregate(Sum('amount'))['amount__sum']
@@ -221,7 +266,6 @@ def get_summaryData(label, entries, stations):
     
     summaryData = {
         'label': label,
-        'latestid': latestid, # don't think this should be here
         'total_entries': total_entries,
         'total_dollars': total_dollars,
         'total_pledges': total_pledges,
@@ -245,7 +289,7 @@ def get_summaryData(label, entries, stations):
   
 def entryListDetail(request):
     entries = decode_entries(request.GET.get('list'))
-       
+    
     label = request.GET.get('label')
     summaryData = get_summaryData(label, entries, Station.objects.all() )
     return render(request, 'main/entryListDetail.html', { 'label': label, 'summaryData': summaryData, 'entries': entries[:15] })
@@ -275,7 +319,7 @@ def deletePledgeEntry(request):
     
 def editPledgeEntry(request):
   
-    entries = Pledge.objects.order_by('-id')[:20]  # [::-1]
+    entries = Pledge.objects.campaign_active().order_by('-id')[:20]  # [::-1]
     entryid = int_or_0(request.POST.get('entryid'))
     
     if entryid == 0:
@@ -344,7 +388,7 @@ def bumpPledgeTime(request):
 
 def pledgeEntry(request):
     
-    entries = Pledge.objects.order_by('-id')[:20]  # [::-1]
+    entries = Pledge.objects.campaign_active().order_by('-id')[:20]  # [::-1]
     
     form = PledgeEntryForm(request.POST or None)
     
@@ -384,7 +428,7 @@ def pledgeEntry(request):
         entry.save()
         
         form = PledgeEntryForm(None)
-        entries = Pledge.objects.order_by('-id')[:20]  # [::-1]
+        entries = Pledge.objects.campaign_active().order_by('-id')[:20]  # [::-1]
         return HttpResponseRedirect('/pledgeEntry/')
     
     if request.GET.get('getrandom', None):

@@ -1,5 +1,7 @@
 from django.contrib import admin
+from .models import Pledge, Station, Campaign
 
-from .models import Pledge, Station
+admin.site.site_header = 'Track-a-Thon Administration'
 admin.site.register(Pledge)
 admin.site.register(Station)
+admin.site.register(Campaign)

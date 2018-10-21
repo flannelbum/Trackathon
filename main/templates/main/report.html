@@ -5,13 +5,36 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col-sm-6">
-    
+    	{% if user.is_authenticated %}
+		{% if campaign_name %}
+    	<h2><i>{{ campaign_name }}</i></h2>
+		{% endif %}    		
+		<div class="dropdown">
+		  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+		    Select a Campaign to view
+		    <span class="caret"></span>
+		  </button>
+		  <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+		    <li><a href='/report/'>Active campaign</a></li>
+		    <li role="separator" class="divider"></li>
+		  	{% for id,name in campaigns.items %}
+		  	<li><a href='/report/?campaignid={{ id }}'>{{ name }}</a></li>
+			{% endfor %}
+		  </ul>
+		</div>
+    		
+    	{% endif %}
+    	
 		<h2>Daily Breakdown</h2>
 			{% for day, entry in daySummary.items %}
 				{% with summaryData=entry.summaryData %}
 					{% include 'main/summary.html' %}
 				{% endwith %}
-				<a href="/report/?dayDetail={{ entry.dayDetail }}">See Hourly Breakdown</a><br/><br/><br/>
+				{% if request.GET.campaignid %}
+					<a href="/report/?campaignid={{ request.GET.campaignid }}&dayDetail={{ entry.dayDetail }}">See Hourly Breakdown</a><br/><br/><br/>
+				{% else %}
+					<a href="/report/?dayDetail={{ entry.dayDetail }}">See Hourly Breakdown</a><br/><br/><br/>
+				{% endif %}
 			{% endfor %} 
         
     </div>

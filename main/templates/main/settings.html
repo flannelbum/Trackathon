@@ -1,0 +1,28 @@
+{% extends 'main/index.html' %}
+{% block title %}Track-a-Thon Settings{% endblock %}
+{% block content %}
+
+<div class="container-fluid">
+	<h1>Track-a-Thon Settings</h1>
+	<h4><a href="/admin">Table admin</a></h4>
+
+	{% if message %}
+		<div class="alert alert-danger" role="alert">{{ message }}</div>
+	{% endif %}
+	{% if activePledgeCount > 0 %}
+		<div class="row">
+		 	<div class="col-lg-5">
+		 		<form method="post">{% csrf_token %}
+		   		<div class="input-group">
+		      			<input name="new_campaign_name" type="text" class="form-control" placeholder="Name and close current campaign">
+		      			<span class="input-group-btn">
+		        			<button class="btn btn-default" type="submit">Close {{ activePledgeCount }} pledges</button>
+		      			</span>
+		    		</div>
+				</form>
+		  	</div>
+		</div>
+	{% endif %}
+</div> <!-- container-fluid -->
+
+{% endblock %}
