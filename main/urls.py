@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^pledgeEntry/$', views.pledgeEntry, name='pledgeEntry'),
     url(r'^report/$', views.report, name='report'),
     url(r'^settings/$', views.TATsettings, name='TATsettings'),
+    url(r'^login/$', views.login_view, name='login'),
     url(r'^entryListDetail/$', views.entryListDetail, name='entryListDetail'),
     url(r'^deletePledgeEntry', views.deletePledgeEntry, name='deletePledgeEntry'),
     url(r'^ajax_retrieve_latest_entries/$', ajax.ajax_retrieve_latest_entries, name='ajax_retrieve_latest_entries'),

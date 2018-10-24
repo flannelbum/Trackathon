@@ -2,8 +2,16 @@
 {% block title %}Track-a-Thon Settings{% endblock %}
 {% block content %}
 
-<div class="container-fluid">
+
 	<h1>Track-a-Thon Settings</h1>
+	<div class="row">
+		<div class="col-sm-2">
+			<form method="post">{% csrf_token %}
+			<button class="btn btn-default" type="submit">Logout</button>
+			<input type="hidden" name="logout" value="logout">
+			</form>
+		</div>
+	</div>
 	<h4><a href="/admin">Table admin</a></h4>
 
 	{% if message %}
@@ -23,6 +31,6 @@
 		  	</div>
 		</div>
 	{% endif %}
-</div> <!-- container-fluid -->
+
 
 {% endblock %}

@@ -8,13 +8,27 @@ import itertools
 from django.conf import settings
 from django.db.models import Sum
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import pytz
 from tagging.models import Tag, TaggedItem
 
 from main.customFunctions import getRandomPledgeForm, int_or_0
 from main.forms import PledgeEntryForm
 from main.models import Pledge, Station, Campaign
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
+
+
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(data=request.POST)
+        if form.is_valid():
+            login(request, form.get_user())
+            return redirect(request.POST.get('next'))
+    else:
+        form = AuthenticationForm()
+    return render(request, 'main/login.html', {'form': form})
 
 
 def dashboard(request):
@@ -57,7 +71,6 @@ def dashboard(request):
         return render(request, 'main/index.html', {})
     
     
-
 def get_entries_in_same_hour_as(entry):
     starttime = datetime.datetime.combine( entry.create_date.date(), datetime.time( entry.create_date.hour, 0, 0, 0, tzinfo=pytz.UTC))
     endtime = datetime.datetime.combine( starttime.date(), datetime.time( starttime.hour, 59, 59, 999999, tzinfo=pytz.UTC))
@@ -67,24 +80,26 @@ def get_entries_in_same_hour_as(entry):
 def get_campaigns():
     campaigns = {}
     for campaign in Campaign.objects.all():
-        campaigns[campaign.id] = campaign.name
+        campaigns[campaign.id] = campaign.name + ' (' + str(Pledge.objects.campaign_past_id(campaign.id).count()) + ')' 
     return campaigns  
   
   
-#TODO: add authenticated decorator and login parts 
+@login_required(login_url='/login/')
 def TATsettings(request):
-    context = {}
+
+    if request.POST.get('logout'):
+        logout(request)
+        return redirect('dashboard')
     
-    if request.POST:
-        new_campaign = request.POST.get('new_campaign_name')
-        if new_campaign == "":
-            context['message'] = 'You must supply a campaign name to close the current campaign!'
-        else:
-            campaign = Campaign.objects.create(name=new_campaign)
-            for pledge in Pledge.objects.campaign_active():
-                pledge.campaign = campaign
-                pledge.save()
-            
+    if request.POST.get('new_campaign_name'):
+        new_campaign = request.POST.get('new_campaign_name')    
+        campaign = Campaign.objects.create(name=new_campaign)
+        for pledge in Pledge.objects.campaign_active():
+            pledge.campaign = campaign
+            pledge.save()
+        return redirect('/report/?campaignid=' + str(campaign.id))
+    
+    context = {}
     context['activePledgeCount'] = Pledge.objects.campaign_active().count()
     return render(request, 'main/settings.html', context)
 
