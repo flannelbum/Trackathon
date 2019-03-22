@@ -2,7 +2,6 @@
 {% block title %}Track-a-Thon Settings{% endblock %}
 {% block content %}
 
-
 	<h1>Track-a-Thon Settings</h1>
 	<div class="row">
 		<div class="col-sm-2">
@@ -14,9 +13,7 @@
 	</div>
 	<h4><a href="/admin">Table admin</a></h4>
 
-	{% if message %}
-		<div class="alert alert-danger" role="alert">{{ message }}</div>
-	{% endif %}
+
 	{% if activePledgeCount > 0 %}
 		<div class="row">
 		 	<div class="col-lg-5">
@@ -31,6 +28,34 @@
 		  	</div>
 		</div>
 	{% endif %}
+<!-- 	
+	<h2>Tag Management</h2>
+	
+	<h3>Current tags</h3>
+	<div class="row">
+		<div class="col tags">
+			{% for tag in tags %}
+				<div class="tag">{{tag}}</div>
+			{% endfor%}
+		</div>
+	</div>
+	
+	<h3>Add tags</h3>
+	<div class="row">
+		<div class="col-lg-5">
+	 		<form method="post">{% csrf_token %}
+	   		<div class="input-group">
+	      			<input name="addtags" type="text" class="form-control" placeholder="Enter tags to add separated by comma">
+	      			<span class="input-group-btn">
+	        			<button class="btn btn-default" type="submit">Add tags</button>
+	      			</span>
+	    		</div>
+			</form>
+		</div>
+	</div> 
+-->
 
-
+	<h3>System Info</h3>
+	Django version - {{ djangov }}<br/>
+	Python version - {{ pythonv }}
 {% endblock %}

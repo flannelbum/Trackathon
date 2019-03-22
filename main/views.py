@@ -15,17 +15,24 @@ from tagging.models import Tag, TaggedItem
 from main.customFunctions import getRandomPledgeForm, int_or_0
 from main.forms import PledgeEntryForm
 from main.models import Pledge, Station, Campaign
+from tagging.utils import parse_tag_input
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 
 
 def login_view(request):
+    
+    if request.POST.get('next'):
+        nextpage = request.POST.get('next')
+    else:
+        nextpage = 'dashboard'
+    
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
         if form.is_valid():
             login(request, form.get_user())
-            return redirect(request.POST.get('next'))
+            return redirect(nextpage)
     else:
         form = AuthenticationForm()
     return render(request, 'main/login.html', {'form': form})
@@ -84,8 +91,12 @@ def get_campaigns():
     return campaigns  
   
   
+import sys
+import django
 @login_required(login_url='/login/')
 def TATsettings(request):
+
+    context = {}
 
     if request.POST.get('logout'):
         logout(request)
@@ -99,7 +110,14 @@ def TATsettings(request):
             pledge.save()
         return redirect('/report/?campaignid=' + str(campaign.id))
     
-    context = {}
+    if request.POST.get('addtags'):
+        for tag in parse_tag_input(request.POST.get('tags')):
+            newtag = Tag(name= tag)
+            newtag.save()
+    
+    context['pythonv'] = sys.version
+    context['djangov'] = django.VERSION
+    context['tags'] = Tag.objects.all()
     context['activePledgeCount'] = Pledge.objects.campaign_active().count()
     return render(request, 'main/settings.html', context)
 
