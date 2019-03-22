@@ -34,6 +34,7 @@ class Pledge(models.Model):
     amount = models.DecimalField(max_digits=9,decimal_places=2)
     firstname = models.CharField(max_length=35, default=None)
     lastname = models.CharField(max_length=35, default=None)
+    is_anonymous = models.BooleanField(default=False)
     is_first_time_donor = models.BooleanField(default=False)
     is_thanked = models.BooleanField(default=False)
     is_monthly = models.BooleanField(default=False)

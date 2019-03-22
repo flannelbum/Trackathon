@@ -10,13 +10,20 @@
 			<div>
 				{% if entry.is_thanked == False %}<span class="glyphicon glyphicon-alert"></span>{% endif %}
 				{% if entry.is_first_time_donor %}<span class="glyphicon glyphicon-heart"></span>{% endif %}
-				{{ entry.amount | prepend_dollars }} - {{ entry.firstname }} {{ entry.lastname }} - {{ entry.city }} - {{ entry.station.callsign }}
+				{% if entry.is_anonymous %}
+					{{ entry.amount | prepend_dollars }} - ANONYMOUS - {{ entry.city }} - {{ entry.station.callsign }}
+				{% else %}
+					{{ entry.amount | prepend_dollars }} - {{ entry.firstname }} {{ entry.lastname }} - {{ entry.city }} - {{ entry.station.callsign }}
+				{% endif %}
 			</div>
 		</h4>
   	</div>
   
 	<div id="{{ entry.id }}" class="panel-collapse collapse">
 		<div class="panel-body">
+			{% if entry.is_anonymous %}
+			<div class="anonhover"><strong>Hover to show name of Anonymous Pledge: </strong></div><div class="anonname">{{ entry.firstname }} {{ entry.lastname }}</div>
+			{% endif %}
 			<div><strong>Created:</strong> {{ entry.create_date }} <strong>SystemID:</strong> {{ entry.id }}</div>
 			<div><strong>Monthly: </strong>{{ entry.is_monthly }} <strong>First Time Donor: </strong>{{ entry.is_first_time_donor }}</div>
 			<div><strong>Thanked: </strong>

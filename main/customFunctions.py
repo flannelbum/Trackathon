@@ -28,6 +28,7 @@ def getRandomPledgeForm():
     form.firstname = entry['firstname']
     form.lastname = entry['lastname']
     form.city = entry['city']
+    form.is_anonymous = entry['is_anonymous']
     form.is_first_time_donor = entry['is_first_time_donor']
     form.is_monthly = entry['is_monthly']
     form.amount = entry['amount']
@@ -62,6 +63,7 @@ def generateRandomPledge(date, create_entry):
         'lastname': str(choice(lastnames)),
         'city': str(choice(cities)),
         'amount': randint(1,70),
+        'is_anonymous': choice([True, False]),
         'is_first_time_donor': choice([True, False]),
         'is_monthly': choice([True, False]),
         'station': choice(Station.objects.all()),
@@ -78,6 +80,7 @@ def generateRandomPledge(date, create_entry):
             lastname = entrydict['lastname'],
             city = entrydict['city'],
             amount = entrydict['amount'],
+            is_anonymous = entrydict['is_anonymous'],
             is_first_time_donor = entrydict['is_first_time_donor'],
             is_monthly = entrydict['is_monthly'],
             station = entrydict['station'],

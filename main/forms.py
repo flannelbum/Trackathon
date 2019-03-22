@@ -15,6 +15,11 @@ class PledgeEntryForm(forms.Form):
         label='Amount',
     )
     
+    is_anonymous = forms.BooleanField(
+        required=False,
+        widget=CheckboxInput(),
+        label='Anonymous Pledge',
+    )
     
     phone_number = forms.CharField(
         required=False,
@@ -26,7 +31,7 @@ class PledgeEntryForm(forms.Form):
     
     
     firstname = forms.CharField(
-        required=False,
+        required=True,
         max_length=35,
         widget=TextInput(
             attrs={'autocomplete':'off'}
@@ -38,7 +43,7 @@ class PledgeEntryForm(forms.Form):
 
 
     lastname = forms.CharField(
-        required=False,
+        required=True,
         max_length=35,
         widget=TextInput(
             attrs={'autocomplete':'off'}

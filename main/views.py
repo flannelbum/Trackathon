@@ -369,6 +369,7 @@ def editPledgeEntry(request):
             p.lastname = form.cleaned_data['lastname']
             p.city = form.cleaned_data['city']
             p.amount = form.cleaned_data['amount']
+            p.is_anonymous = form.cleaned_data['is_anonymous']
             p.is_first_time_donor = form.cleaned_data['is_first_time_donor']
             p.is_monthly = form.cleaned_data['is_monthly']
             p.station = form.cleaned_data['station']
@@ -389,6 +390,7 @@ def editPledgeEntry(request):
         form.fields["lastname"].initial = p.lastname
         form.fields["city"].initial = p.city
         form.fields["amount"].initial = p.amount
+        form.fields["is_anonymous"].initial = p.is_anonymous
         form.fields["is_monthly"].initial = p.is_monthly
         form.fields["is_first_time_donor"].initial = p.is_first_time_donor
         form.fields["station"].initial = p.station
@@ -432,6 +434,7 @@ def pledgeEntry(request):
             lastname=form.cleaned_data['lastname'],
             city=form.cleaned_data['city'],
             amount=form.cleaned_data['amount'],
+            is_anonymous = form.cleaned_data['is_anonymous'],
             is_first_time_donor=form.cleaned_data['is_first_time_donor'],
             is_monthly=form.cleaned_data['is_monthly'],
             station=form.cleaned_data['station'],
@@ -470,6 +473,7 @@ def pledgeEntry(request):
         form.fields["lastname"].initial = myform.lastname
         form.fields["city"].initial = myform.city
         form.fields["amount"].initial = myform.amount
+        form.fields["is_anonymous"].initial = myform.is_anonymous
         form.fields["is_first_time_donor"].initial = myform.is_first_time_donor
         form.fields["is_monthly"].initial = myform.is_monthly
         form.fields["station"].initial = myform.station
