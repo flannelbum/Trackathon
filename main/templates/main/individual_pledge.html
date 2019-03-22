@@ -24,7 +24,7 @@
 			{% if entry.is_anonymous %}
 			<div class="anonhover"><strong>Hover to show name of Anonymous Pledge: </strong></div><div class="anonname">{{ entry.firstname }} {{ entry.lastname }}</div>
 			{% endif %}
-			<div><strong>Created:</strong> {{ entry.create_date }} <strong>SystemID:</strong> {{ entry.id }}</div>
+			<div><strong>Created:</strong> <span id="createdate_{{entry.id}}">{{ entry.create_date }}</span> <strong>SystemID:</strong> {{ entry.id }}</div>
 			<div><strong>Monthly: </strong>{{ entry.is_monthly }} <strong>First Time Donor: </strong>{{ entry.is_first_time_donor }}</div>
 			<div><strong>Thanked: </strong>
 				{%if entry.is_thanked %}
