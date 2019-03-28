@@ -25,7 +25,7 @@ SECRET_KEY = 'y33*pos4furf&sa2t=*847s8_3a&$g#n#-q+c^1g)^wg2*6$*0'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['arnweb1', 'flannelbum.mooo.com', 'raspberrypi', 'blaze', 'localhost', '127.0.0.1', '0.0.0.0']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
