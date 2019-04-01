@@ -22,7 +22,7 @@ class PledgeEntryForm(forms.Form):
     )
     
     phone_number = forms.CharField(
-        required=False,
+        required=True,
         max_length=13,
         widget=TextInput(
             attrs={'autocomplete':'off'}
