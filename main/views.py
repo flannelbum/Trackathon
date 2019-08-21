@@ -137,13 +137,18 @@ def report(request):
         campaign = Campaign.objects.get(pk=campaignid)
         context['campaign_name'] = campaign.name
         days = Pledge.objects.campaign_past_id( campaignid ).datetimes('create_date', 'day', 'DESC', localtz)
+        fullSummary = Pledge.objects.campaign_past_id( campaignid ).all()
     else:
         days = Pledge.objects.campaign_active().datetimes('create_date', 'day', 'DESC', localtz)
+        fullSummary = Pledge.objects.campaign_active().all()
+        context['campaign_name'] = "Active Campaign"
+        
+    context['fullSummary'] = get_summaryData(context['campaign_name'], fullSummary, Station.objects.all())
         
     dayDetail = request.GET.get('dayDetail', None)
     
     for day in days:       
-        label = calendar.day_name[day.weekday()] + ", " + str(day.month) + "/" + str(day.day) + "/" + str(day.year)
+        label = context['campaign_name'] + " » " + calendar.day_name[day.weekday()] + ", " + str(day.month) + "/" + str(day.day) + "/" + str(day.year)
         
         if campaignid > 0:
             entries = Pledge.objects.campaign_past_id( campaignid ).filter(create_date__date=datetime.datetime(day.year, day.month, day.day, 0,0, tzinfo=localtz)).order_by('create_date') 
@@ -154,7 +159,7 @@ def report(request):
         
         if dayDetail == day.date().__str__():
             context['date'] = datetime.date(day.year, day.month, day.day)
-            context['hourlyBreakdown'] = hourlyBreakdown(entries)
+            context['hourlyBreakdown'] = hourlyBreakdown( context['campaign_name'], entries)
                         
         daySummary[day.date().__str__()] = {
             'dayDetail': day.date().__str__(), 
@@ -172,7 +177,7 @@ def date_hour(_datetime):
     _dt = _datetime.astimezone( pytz.timezone( settings.TIME_ZONE))
     return _dt.strftime("%I:00 %p") #ex: 05:00 PM
 
-def hourlyBreakdown(entries):
+def hourlyBreakdown(campaignName, entries):
     hbd = OrderedDict()
     
     groups = itertools.groupby(entries, lambda x:date_hour( x.create_date)) 
@@ -186,7 +191,7 @@ def hourlyBreakdown(entries):
         createdate = entry.create_date
         timestring = createdate.astimezone( pytz.timezone( settings.TIME_ZONE ))
         
-        label = group + " Breakdown for " + timestring.strftime("%b %d, %Y") 
+        label = campaignName + " » " + group + " Breakdown for " + timestring.strftime("%b %d, %Y") 
 
         hbd[group] = {'count': len(hrlyids), 'summaryData': get_summaryData(label, qs, None), 'entries': qs}
          
@@ -447,20 +452,12 @@ def pledgeEntry(request):
         entry.tags = form.cleaned_data['tags']
 
         # Auto-add Apostle tag on entries that are 1000+ on entry
-        if entry.amount > 999:
+        if entry.amount >= 1200:
             tags = 'Apostle, '
             for tag in list(entry.tags.values_list('name', flat=True)):
                 tags += tag + ', '
             entry.tags = tags
-                
-        # Auto-add BTC tag when firstname and lastname are blank
-        if not entry.firstname: 
-            if not entry.lastname:
-                tags = 'BTC, '
-                for tag in list(entry.tags.values_list('name', flat=True)):
-                    tags += tag + ', '
-            entry.tags = tags
-        
+                        
         entry.save()
         
         form = PledgeEntryForm(None)

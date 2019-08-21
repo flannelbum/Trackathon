@@ -8,11 +8,11 @@
 		<a onclick="exporttocsv()">Export to CSV</a>
 	</div>
 	{% endif %}
-	{% if summaryData %}
+
 	<div class="row">
-			{% include 'main/summary.html' %}
+	  {% include 'main/summary.html' %}
 	</div>
-	{% endif %}
+
 	<div class="row">
 	 	<div class="panel-group" id="accordion">
 	  		{% include 'main/multiple_pledges.html' %}
