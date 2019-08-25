@@ -91,7 +91,8 @@ def get_campaigns():
     return campaigns  
   
   
-import sys
+#import sys
+from platform import python_version
 import django
 @login_required(login_url='/login/')
 def TATsettings(request):
@@ -115,8 +116,9 @@ def TATsettings(request):
             newtag = Tag(name= tag)
             newtag.save()
     
-    context['pythonv'] = sys.version
-    context['djangov'] = django.VERSION
+    context['pythonv'] = python_version()
+    
+    context['djangov'] = django.get_version()
     context['tags'] = Tag.objects.all()
     context['activePledgeCount'] = Pledge.objects.campaign_active().count()
     return render(request, 'main/settings.html', context)
