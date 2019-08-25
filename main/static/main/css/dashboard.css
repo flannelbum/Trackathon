@@ -10,11 +10,3 @@
     z-index: 1000;
     width: 100%;
 }
-
-.HourSeparator {
-    text-align: center;
-    font-size: medium;
-    font-stretch: expanded;
-    padding-top: 4px;
-    padding-bottom: 4px;
-}

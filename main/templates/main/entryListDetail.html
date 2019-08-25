@@ -27,15 +27,13 @@
 {% endblock %}
 
 {% block javascript %}
+<script src="/static/main/js/insertingDateFunctions.js"></script>
 <script type="text/javascript">
 	// we don't want users able to change the thanked status as we're not handling that with this view
 	$('.panel-group input[type=checkbox]').attr('disabled','true');
 
 	// the report pill should be active if we're on this page
 	$('#nav_report').addClass('active');
-	
-	// enable fancy effects
-	$.get("/static/main/js/entryeffects.js");
 	
 	function getURLParameter(name) {
 		return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || [null, ''])[1].replace(/\+/g, '%20')) || null;
@@ -46,6 +44,8 @@
 	}
 	
 	$("#spinner").hide();
+	
+	insertHourMarkers();
 	
 	function getLid(){
 	  	// create an array
@@ -88,6 +88,7 @@
 			          	$("#accordion").append(data);
 			          	$.get("/static/main/js/entryeffects.js");
 			          	$(window).data('ajaxready', true);
+			          	insertHourMarkers();
 					} 
 				})
 				.always(function(){

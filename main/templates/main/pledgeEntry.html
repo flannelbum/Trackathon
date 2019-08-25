@@ -36,18 +36,12 @@
 
 {% block javascript %}
 <script type="text/javascript">
-$(document).ready(function() {
-	$(".hoverclick").click(function(){
-		$(this).stop().fadeOut(10).fadeIn(500);
-	});
-	$(".hoverclick").mouseenter(function(){
-		$(this).fadeOut(100);
-	    $(this).fadeIn(100);
-	},null);
-});
 
+// Enable entry effects
+$.get("/static/main/js/entryeffects.js");
+
+// Disable the "Thanked" checkbox as we're not handeling it here
 $('.panel-group input[type=checkbox]').attr('disabled','true');
-
 
 
 </script>

@@ -139,9 +139,9 @@ def report(request):
         days = Pledge.objects.campaign_past_id( campaignid ).datetimes('create_date', 'day', 'DESC', localtz)
         fullSummary = Pledge.objects.campaign_past_id( campaignid ).all()
     else:
+        context['campaign_name'] = "Active Campaign"
         days = Pledge.objects.campaign_active().datetimes('create_date', 'day', 'DESC', localtz)
         fullSummary = Pledge.objects.campaign_active().all()
-        context['campaign_name'] = "Active Campaign"
         
     context['fullSummary'] = get_summaryData(context['campaign_name'], fullSummary, Station.objects.all())
         
