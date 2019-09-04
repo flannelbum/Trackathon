@@ -2,11 +2,22 @@ from django.utils import timezone
 
 from django.db import models
 from tagging.registry import register
-  
+
+
+class TATSetting(models.Model):
+    setting = models.CharField(max_length=200, unique=True, blank=False, null=False)
+    value = models.CharField(max_length=200, blank=True, null=True)
+    date = models.DateField(default=None, blank=True, null=True) 
+    
+    def __str__(self):
+        return self.setting
+
 
 class Campaign(models.Model):
     name = models.CharField(max_length=200)
-
+    start_date = models.DateField(default=None, blank=True, null=True)
+    end_date = models.DateField(default=None, blank=True, null=True)
+    
     def __str__(self):
         return str(self.name)
         
@@ -27,6 +38,33 @@ class PledgeCampaign(models.Manager):
     def campaign_past_id(self, campaign_id):
         campaign = Campaign.objects.get(id=campaign_id)
         return super().get_queryset().filter(campaign__exact=campaign)
+    
+    def get_active_campaign_start_date(self):
+        try:
+            start_date = TATSetting.objects.get(setting='activeCampaign_start_date').date
+        except TATSetting.DoesNotExist:
+            start_date = None
+        return start_date
+    
+    def get_active_campaign_end_date(self):
+        try:
+            end_date = TATSetting.objects.get(setting='activeCampaign_end_date').date
+        except TATSetting.DoesNotExist:
+            end_date = None 
+        return end_date
+    
+    
+    #TODO Create valid setters for active campaign
+    def set_active_campaign_start_date(self, start_date):
+        pass
+    def set_active_campaign_end_date(self, end_date):
+        pass    
+    
+    #TODO Create valid lookup for past campaigns
+    def get_past_campaign_start_date(self, campaign_id):
+        return None
+    def get_past_campaign_end_date(self, campaign_id):
+        return None
 
 
 class Pledge(models.Model):

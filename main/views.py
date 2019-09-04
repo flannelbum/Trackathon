@@ -2,7 +2,7 @@ from base64 import urlsafe_b64encode, urlsafe_b64decode
 import calendar
 from collections import OrderedDict
 import datetime
-from datetime import timedelta
+from datetime import datetime as dt, timedelta
 import itertools
 
 from django.conf import settings
@@ -15,7 +15,6 @@ from tagging.models import Tag, TaggedItem
 from main.customFunctions import getRandomPledgeForm, int_or_0
 from main.forms import PledgeEntryForm
 from main.models import Pledge, Station, Campaign
-from tagging.utils import parse_tag_input
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -91,9 +90,8 @@ def get_campaigns():
     return campaigns  
   
   
-#import sys
 from platform import python_version
-import django
+from django import get_version
 @login_required(login_url='/login/')
 def TATsettings(request):
 
@@ -103,6 +101,34 @@ def TATsettings(request):
         logout(request)
         return redirect('dashboard')
     
+    alert = ""
+    message = ""
+    start_date = None
+    end_date = None
+    if request.POST.get('start_date') or request.POST.get('end_date'):
+        try:
+            start_date = dt.strptime(request.POST.get('start_date'), '%m/%d/%Y')
+            end_date = dt.strptime(request.POST.get('end_date'), '%m/%d/%Y')
+
+            if start_date > end_date:
+                alert = "Start date must be before end date"
+            else:
+                message = "Start date set: " + dt.strftime(start_date, '%m/%d/%Y') + " End date set: " + dt.strftime(end_date, '%m/%d/%Y')
+        
+        except ValueError:        
+            alert = "Invalid date(s) selected"
+    
+    else:
+        ## get the start and end date from the database if exists
+        start_date = Pledge.objects.get_active_campaign_start_date()
+        end_date = Pledge.objects.get_active_campaign_end_date()
+    
+    if start_date != None: 
+        context['start_date'] = dt.strftime(start_date, '%m/%d/%Y')
+    if end_date != None:
+        context['end_date'] = dt.strftime(end_date, '%m/%d/%Y')
+    
+    
     if request.POST.get('new_campaign_name'):
         new_campaign = request.POST.get('new_campaign_name')    
         campaign = Campaign.objects.create(name=new_campaign)
@@ -111,15 +137,11 @@ def TATsettings(request):
             pledge.save()
         return redirect('/report/?campaignid=' + str(campaign.id))
     
-    if request.POST.get('addtags'):
-        for tag in parse_tag_input(request.POST.get('tags')):
-            newtag = Tag(name= tag)
-            newtag.save()
     
-    context['pythonv'] = python_version()
-    
-    context['djangov'] = django.get_version()
-    context['tags'] = Tag.objects.all()
+    context['alert'] = alert
+    context['message'] = message  
+    context['pythonv'] = python_version()  
+    context['djangov'] = get_version()
     context['activePledgeCount'] = Pledge.objects.campaign_active().count()
     return render(request, 'main/settings.html', context)
 

@@ -3,6 +3,17 @@
 {% block content %}
 
 	<h1>Track-a-Thon Settings</h1>
+	{% if alert %}
+		<div id="alert" class="alert alert-danger" role="alert">{{ alert }}</div>
+	{% endif %}
+	{% if message %}
+		<div id="success" class="alert alert-success" role="alert">{{ message }}</div>
+		<script>
+			setTimeout(function() {
+				$("#success").hide(1000)}, 3000);
+			
+		</script>
+	{% endif %}
 	<div class="row">
 		<div class="col-sm-2">
 			<form method="post">{% csrf_token %}
@@ -13,49 +24,74 @@
 	</div>
 	<h4><a href="/admin">Table admin</a></h4>
 
-
+	<h3>Current Campaign</h3>
+	<form method="post">{% csrf_token %}
+		<div class="input-group">
+			<div class="row">
+				
+				<div class="col-sm-3">
+					{% if start_date %}
+					<input name="start_date" type="text" id="start_date" class="form-control" value="{{ start_date }}">
+					{% else %}
+					<input name="start_date" type="text" id="start_date" class="form-control" placeholder="startdate">
+					{% endif %}
+				</div>
+				
+				<div class="col-sm-3">
+					{% if end_date %}
+					<input name="end_date" type="text" id="end_date" class="form-control" value="{{ end_date }}">
+					{% else %}
+					<input name="end_date" type="text" id="end_date" class="form-control" placeholder="enddate">
+					{% endif %}
+					
+					
+				</div>
+			
+				<div class="col-sm-3">
+					<button class="btn btn-default" type="submit">Set Start/End dates for Campaign</button>
+				</div>
+			
+			</div>
+		</div>
+	</form>
+	
 	{% if activePledgeCount > 0 %}
-		<div class="row">
-		 	<div class="col-lg-5">
-		 		<form method="post">{% csrf_token %}
-		   		<div class="input-group">
-		      			<input name="new_campaign_name" type="text" class="form-control" placeholder="Name and close current campaign">
-		      			<span class="input-group-btn">
-		        			<button class="btn btn-default" type="submit">Close {{ activePledgeCount }} pledges</button>
-		      			</span>
-		    		</div>
-				</form>
-		  	</div>
-		</div>
-	{% endif %}
-<!-- 	
-	<h2>Tag Management</h2>
-	
-	<h3>Current tags</h3>
-	<div class="row">
-		<div class="col tags">
-			{% for tag in tags %}
-				<div class="tag">{{tag}}</div>
-			{% endfor%}
-		</div>
-	</div>
-	
-	<h3>Add tags</h3>
-	<div class="row">
-		<div class="col-lg-5">
+	<div class="row row-margin">
+	 	<div class="col-lg-5">
 	 		<form method="post">{% csrf_token %}
 	   		<div class="input-group">
-	      			<input name="addtags" type="text" class="form-control" placeholder="Enter tags to add separated by comma">
+	      			<input name="new_campaign_name" type="text" class="form-control" placeholder="Name and close current campaign">
 	      			<span class="input-group-btn">
-	        			<button class="btn btn-default" type="submit">Add tags</button>
+	        			<button class="btn btn-default" type="submit">Close {{ activePledgeCount }} pledges</button>
 	      			</span>
 	    		</div>
 			</form>
-		</div>
-	</div> 
--->
+	  	</div>
+	</div>
+	{% endif %}
+
 
 	<h3>System Info</h3>
 	Django version - {{ djangov }}<br/>
 	Python version - {{ pythonv }}
 {% endblock %}
+
+{% block style %}
+	<style>
+	.row-margin { margin-top: 1.0em; } 
+	</style>
+{% endblock %}
+
+{% block javascript %}
+	
+	<script>
+		
+		$( function() {
+			$( "#start_date" ).datepicker();
+			$( "#end_date" ).datepicker();
+		} );
+		
+	</script>
+{% endblock %}
+
+
