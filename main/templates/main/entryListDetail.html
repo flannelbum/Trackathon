@@ -90,6 +90,7 @@
 			          	$.get("/static/main/js/entryeffects.js");
 			          	$(window).data('ajaxready', true);
 			          	insertHourMarkers();
+			          	$('.panel-group input[type=checkbox]').attr('disabled','true');
 					} 
 				})
 				.always(function(){
