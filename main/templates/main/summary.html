@@ -111,6 +111,7 @@
 	{% else %}
 	{% if summaryData.label %}
 	<h4>{{ summaryData.label }}</h4>
+	{% if slug %}<h6>{{ slug }}</h6>{% endif %}
 	{% endif %}
 	<div class="row"><!-- brief summary -->
 	<ul>
