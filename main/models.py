@@ -4,13 +4,45 @@ from django.db import models
 from tagging.registry import register
 
 
+class TATSettingManager(models.Manager):
+    
+    def getSetting(self, setting_name):
+        try:
+            setting = TATSetting.objects.get(setting=setting_name)
+        except TATSetting.DoesNotExist:
+            setting = TATSetting(setting=setting_name, value=None, date=None)
+            setting.save()
+        return setting
+    
+    def setSetting(self, setting_name, setting_value, setting_date):
+        try:
+            setting = TATSetting.objects.get(setting=setting_name)
+        except TATSetting.DoesNotExist:
+            setting = TATSetting(setting=setting_name, value=None, date=None)
+            
+        setting.value = setting_value
+        setting.date = setting_date
+        setting.save()
+        return setting
+    
+    def deleteSetting(self, setting_name):
+        try:
+            setting = TATSetting.objects.get(setting=setting_name)
+            setting.delete()
+        except TATSetting.DoesNotExist:
+            pass
+
+
 class TATSetting(models.Model):
     setting = models.CharField(max_length=200, unique=True, blank=False, null=False)
     value = models.CharField(max_length=200, blank=True, null=True)
     date = models.DateField(default=None, blank=True, null=True) 
     
     def __str__(self):
-        return self.setting
+        return self.setting + ' - ' + str(self.value) + ' - ' + str(self.date)
+    
+    objects = TATSettingManager()
+
 
 
 class Campaign(models.Model):
@@ -40,31 +72,24 @@ class PledgeCampaign(models.Manager):
         return super().get_queryset().filter(campaign__exact=campaign)
     
     def get_active_campaign_start_date(self):
-        try:
-            start_date = TATSetting.objects.get(setting='activeCampaign_start_date').date
-        except TATSetting.DoesNotExist:
-            start_date = None
-        return start_date
+        return TATSetting.objects.getSetting('activeCampaign_start_date').date
     
     def get_active_campaign_end_date(self):
-        try:
-            end_date = TATSetting.objects.get(setting='activeCampaign_end_date').date
-        except TATSetting.DoesNotExist:
-            end_date = None 
-        return end_date
-    
-    
-    #TODO Create valid setters for active campaign
+        return TATSetting.objects.getSetting('activeCampaign_end_date').date
+        
     def set_active_campaign_start_date(self, start_date):
-        pass
+        TATSetting.objects.setSetting('activeCampaign_start_date', None, start_date)
+            
     def set_active_campaign_end_date(self, end_date):
-        pass    
+        TATSetting.objects.setSetting('activeCampaign_end_date', None, end_date) 
     
-    #TODO Create valid lookup for past campaigns
     def get_past_campaign_start_date(self, campaign_id):
-        return None
+        campaign = Campaign.objects.get(id=campaign_id)
+        return campaign.start_date
+        
     def get_past_campaign_end_date(self, campaign_id):
-        return None
+        campaign = Campaign.objects.get(id=campaign_id)
+        return campaign.end_date
 
 
 class Pledge(models.Model):
@@ -96,15 +121,3 @@ class Pledge(models.Model):
     objects = PledgeCampaign()
     
 register(Pledge)
-
-
-
-
-
-
-
-
-
-
-
-
