@@ -96,11 +96,16 @@ def generateRandomPledge(date, create_entry):
         
         
         
-def generateDay(year, month, day):
+def generateDay(year, month, day, perHour=None):
     localtz = timezone( settings.TIME_ZONE)
-    for hour in range(5,20):
-        for minute in range(0,60):
-            generateRandomPledge(localtz.localize(datetime(year, month, day, hour, minute, 0)),True)
+    if perHour == None:
+        for hour in range(5,20):
+            for minute in range(0,60):
+                generateRandomPledge(localtz.localize(datetime(year, month, day, hour, minute, 0)),True)
+    else:
+        for hour in range(5,13):
+            for minute in range(0,perHour):
+                generateRandomPledge(localtz.localize(datetime(year, month, day, hour, minute, 0)),True)
 
 
 def getRandomPledgeForm_old():
@@ -159,11 +164,15 @@ def prettydate(d):
         return '{} hours ago'.format(s/3600)
     
     
+import time
+class Timer:
+       
+    def __init__(self):
+        self.start = time.time()
     
-    
-    
-    
-    
+    def elapsed(self):
+        self.end = time.time()
+        return str(self.end - self.start)
     
     
     
