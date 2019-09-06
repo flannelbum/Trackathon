@@ -12,13 +12,12 @@ from django.shortcuts import render, redirect
 import pytz
 from tagging.models import Tag, TaggedItem
 
-from main.customFunctions import getRandomPledgeForm, int_or_0
+from main.customFunctions import getRandomPledgeForm, int_or_0, Timer
 from main.forms import PledgeEntryForm
 from main.models import Pledge, Station, Campaign
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-
 
 def login_view(request):
     
@@ -106,6 +105,7 @@ def TATsettings(request):
     start_date = None
     end_date = None
     if request.POST.get('start_date') or request.POST.get('end_date'):
+               
         try:
             start_date = dt.strptime(request.POST.get('start_date'), '%m/%d/%Y')
             end_date = dt.strptime(request.POST.get('end_date'), '%m/%d/%Y')
@@ -114,7 +114,9 @@ def TATsettings(request):
                 alert = "Start date must be before end date"
             else:
                 message = "Start date set: " + dt.strftime(start_date, '%m/%d/%Y') + " End date set: " + dt.strftime(end_date, '%m/%d/%Y')
-        
+                Pledge.objects.set_active_campaign_start_date(start_date)
+                Pledge.objects.set_active_campaign_end_date(end_date)
+                
         except ValueError:        
             alert = "Invalid date(s) selected"
     
@@ -125,13 +127,23 @@ def TATsettings(request):
     
     if start_date != None: 
         context['start_date'] = dt.strftime(start_date, '%m/%d/%Y')
+    else: 
+        context['start_date'] = start_date
+    
     if end_date != None:
         context['end_date'] = dt.strftime(end_date, '%m/%d/%Y')
+    else:
+        context['end_date'] = end_date
     
     
     if request.POST.get('new_campaign_name'):
         new_campaign = request.POST.get('new_campaign_name')    
         campaign = Campaign.objects.create(name=new_campaign)
+        campaign.start_date = Pledge.objects.get_active_campaign_start_date()
+        campaign.end_date = Pledge.objects.get_active_campaign_end_date()
+        campaign.save()
+        Pledge.objects.set_active_campaign_start_date(None)
+        Pledge.objects.set_active_campaign_end_date(None)
         for pledge in Pledge.objects.campaign_active():
             pledge.campaign = campaign
             pledge.save()
@@ -145,8 +157,10 @@ def TATsettings(request):
     context['activePledgeCount'] = Pledge.objects.campaign_active().count()
     return render(request, 'main/settings.html', context)
 
-
+import warnings
 def report(request):
+    
+    rt = Timer()
     
     context = {}
     daySummary = OrderedDict()
@@ -162,29 +176,74 @@ def report(request):
         context['campaign_name'] = campaign.name
         days = Pledge.objects.campaign_past_id( campaignid ).datetimes('create_date', 'day', 'DESC', localtz)
         fullSummary = Pledge.objects.campaign_past_id( campaignid ).all()
+        
+        start_date = Pledge.objects.get_past_campaign_start_date(campaignid)
+        end_date = Pledge.objects.get_past_campaign_end_date(campaignid)
+        context['start_date'] = start_date
+        context['end_date'] = end_date
+
+        if start_date != None and end_date != None:
+
+            # Catch RuntimeWarning: DateTimeField Pledge.create_date received a naive datetime while time zone support is active.
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                preSummary = Pledge.objects.campaign_past_id( campaignid ).all().filter(create_date__range=('1970-01-01', start_date))
+                midSummary = Pledge.objects.campaign_past_id( campaignid ).all().filter(create_date__range=(start_date, end_date))
+                postSummary = Pledge.objects.campaign_past_id( campaignid ).all().filter(create_date__range=(end_date, '2100-01-01'))
+                
+            context['preSummary'] = get_summaryData("Pre-Sharathon Dollars", preSummary, None)
+            context['preSlug'] = "Before " + datetime.datetime.strftime(start_date, '%m/%d/%Y')
+            context['midSummary'] = get_summaryData("Sharathon Dollars", midSummary, None)
+            context['midSlug'] = "Between " + datetime.datetime.strftime(start_date, '%m/%d/%Y') + " - " + datetime.datetime.strftime(end_date, '%m/%d/%Y')
+            context['postSummary'] = get_summaryData("Post-Sharathon Dollars", postSummary, None)
+            context['postSlug'] = "After " + datetime.datetime.strftime(end_date, '%m/%d/%Y')
     else:
+        print("Active camp begin: " + rt.elapsed())
         context['campaign_name'] = "Active Campaign"
         days = Pledge.objects.campaign_active().datetimes('create_date', 'day', 'DESC', localtz)
         fullSummary = Pledge.objects.campaign_active().all()
         
-    context['fullSummary'] = get_summaryData(context['campaign_name'], fullSummary, Station.objects.all())
-        
+        start_date = Pledge.objects.get_active_campaign_start_date()
+        end_date = Pledge.objects.get_active_campaign_end_date()
+        context['start_date'] = start_date
+        context['end_date'] = end_date
+        if start_date != None and end_date != None:
+            # Catch RuntimeWarning: DateTimeField Pledge.create_date received a naive datetime while time zone support is active.
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                preSummary = Pledge.objects.campaign_active().all().filter(create_date__range=('1970-01-01', start_date))
+                midSummary = Pledge.objects.campaign_active().all().filter(create_date__range=(start_date, end_date + datetime.timedelta(days=1)))
+                postSummary = Pledge.objects.campaign_active().all().filter(create_date__range=(end_date + datetime.timedelta(days=1), '2100-01-01'))
+            
+            context['preSummary'] = get_summaryData("Pre-Sharathon Dollars", preSummary, None)
+            context['preSlug'] = "Before " + datetime.datetime.strftime(start_date, '%m/%d/%Y')
+            context['midSummary'] = get_summaryData("Sharathon Dollars", midSummary, None)
+            context['midSlug'] = "Between " + datetime.datetime.strftime(start_date, '%m/%d/%Y') + " - " + datetime.datetime.strftime(end_date, '%m/%d/%Y')
+            context['postSummary'] = get_summaryData("Post-Sharathon Dollars", postSummary, None)
+            context['postSlug'] = "After " + datetime.datetime.strftime(end_date, '%m/%d/%Y')
+    
+    
+    context['fullSummary'] = get_summaryData("Grand Total Overall", fullSummary, None)
+
     dayDetail = request.GET.get('dayDetail', None)
     
-    for day in days:       
+    print("contexts loaded: " + rt.elapsed())
+    
+    for day in days:
+        print("Handeling days: " + rt.elapsed())
         label = context['campaign_name'] + " » " + calendar.day_name[day.weekday()] + ", " + str(day.month) + "/" + str(day.day) + "/" + str(day.year)
-        
+          
         if campaignid > 0:
             entries = Pledge.objects.campaign_past_id( campaignid ).filter(create_date__date=datetime.datetime(day.year, day.month, day.day, 0,0, tzinfo=localtz)).order_by('create_date') 
         else:
             entries = Pledge.objects.campaign_active().filter(create_date__date=datetime.datetime(day.year, day.month, day.day, 0,0, tzinfo=localtz)).order_by('create_date')
-        
+          
         count = entries.count()
-        
+          
         if dayDetail == day.date().__str__():
             context['date'] = datetime.date(day.year, day.month, day.day)
             context['hourlyBreakdown'] = hourlyBreakdown( context['campaign_name'], entries)
-                        
+                          
         daySummary[day.date().__str__()] = {
             'dayDetail': day.date().__str__(), 
             'label': label, 
@@ -192,7 +251,9 @@ def report(request):
             'summaryData': get_summaryData(label, entries, None)
         }
         context['daySummary'] = daySummary
-        
+    
+    print("ending: " + rt.elapsed())
+    
     return render(request, 'main/report.html', context)
    
     
@@ -292,6 +353,8 @@ def get_taglist(entries, topnum):
 
 def get_summaryData(label, entries, stations):
     
+    sdt = Timer() 
+    print("IN get_summaryData " + str(label) + " count of: " + str(entries.count()))
     if entries == None:
         entries = Pledge.objects.campaign_active().all()
 
@@ -345,7 +408,7 @@ def get_summaryData(label, entries, stations):
       
     if len(stationData) > 0:
         summaryData['stationData'] = stationData
-        
+    print("OUT get_summaryData: " + sdt.elapsed())
     return summaryData
 
   

@@ -3,33 +3,50 @@
 {% block title %}Report{% endblock %}
 {% block content %}
 <div class="container-fluid">
-  <div class="row">
-    <div class="col-sm-12">
-    
-      {% if user.is_authenticated %}
-        <div class="dropdown">
-		  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-		    Select a Campaign to view
-		    <span class="caret"></span>
-		  </button>
-		  <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-		    <li><a href='/report/'>Active campaign</a></li>
-		    <li role="separator" class="divider"></li>
-		  	{% for id,name in campaigns.items %}
-		  	<li><a href='/report/?campaignid={{ id }}'>{{ name }}</a></li>
-			{% endfor %}
-		  </ul>
-		</div>		
+	<div class="row">
+		<div class="col-sm-12">
+		{% if user.is_authenticated %}
+			<div class="dropdown">
+				<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+				Select a Campaign to view <span class="caret"></span>
+				</button>
+				<ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+					<li><a href='/report/'>Active campaign</a></li>
+					<li role="separator" class="divider"></li>
+					{% for id,name in campaigns.items %}
+					<li><a href='/report/?campaignid={{ id }}'>{{ name }}</a></li>
+					{% endfor %}
+				</ul>
+			</div>		
       {% endif %}
       
-      <h2><i>{{ campaign_name }}</i></h2>
-      {% with summaryData=fullSummary %}
-      	{% include 'main/summary.html' %}
-      {% endwith %}
-
+		<h2><i>{{ campaign_name }}</i></h2>
+		{% with summaryData=fullSummary %}
+			{% include 'main/summary.html' %}
+		{% endwith %}
+	    </div>
+	  </div>
+	  {% if start_date and end_date %}
+	  <div class="row">
+	    <div class="col-sm-4">
+			{% with summaryData=preSummary slug=preSlug%}
+				{% include 'main/summary.html' %}
+			{% endwith %}
+		</div>
+		<div class="col-sm-4">
+			{% with summaryData=midSummary slug=midSlug%}
+				{% include 'main/summary.html' %}
+			{% endwith %}
+		</div>
+		<div class="col-sm-4">
+			{% with summaryData=postSummary slug=postSlug%}
+				{% include 'main/summary.html' %}
+			{% endwith %}
+		</div>
+		{% endif %}
     </div>
   </div>
-  <div class="row">
+   <div class="row">
     <div class="col-sm-6">
     	
 	  <h2>Daily Breakdown</h2>
@@ -59,65 +76,9 @@
 
     </div>
   </div>
-</div>
-{% endblock %}
-
-{% block javascript %}
-<script src="/static/main/js/entryeffects.js"></script>
-<script src="/static/main/js/insertingDateFunctions.js"></script>
 {% endblock %}
 
 
 {% block style %}
 <link href="/static/main/css/entrylist.css" rel="stylesheet" />	
-<style>
-/* table, th, td {
-    border: 1px solid grey;
-} */
-
-.list-group-item {
-    position: relative;
-    display: block;
-    padding: 10px 15px;
-    margin-bottom: -1px;
-    background-color: #d9edf7;
-    border: 1px solid #337ab7;
-}
-
-.form-group ul {
-  list-style: none;
-  position:relative;
-  right:35px;
-}
-
-input[type="checkbox"] {
-  transform:scale(2, 2);
-  position:relative;
-  left:10px;
-  top:3px;
-}
-
-
-.list-group-item {
-    position: relative;
-    display: block;
-    padding: 10px 15px;
-    margin-bottom: -1px;
-    background-color: #d9edf7;
-    border: 2px solid #337ab7;
-}
-.panel-default>.panel-heading {
-    color: #333;
-    background-color: #d9edf7;
-    border-color: #337ab7;
-}
-.panel-default>.monthly {
-  
-    background-color: #ffffdc;
-}
-.panel-heading {
-    cursor: pointer;
-}
-
-</style>
 {% endblock %}
