@@ -12,7 +12,7 @@ from django.shortcuts import render, redirect
 import pytz
 from tagging.models import Tag, TaggedItem
 
-from main.customFunctions import getRandomPledgeForm, int_or_0, Timer
+from main.customFunctions import getRandomPledgeForm, int_or_0
 from main.forms import PledgeEntryForm
 from main.models import Pledge, Station, Campaign
 from django.contrib.auth.forms import AuthenticationForm
@@ -36,44 +36,47 @@ def login_view(request):
     return render(request, 'main/login.html', {'form': form})
 
 
+
 def dashboard(request):
-    try:
-        context = {}
-        context['overall_totals_summaryData'] = get_summaryData( "Campaign Overall", Pledge.objects.campaign_active().all(), None )
-        
-        # get latest entry
-        latestentry = Pledge.objects.campaign_active().all().latest('create_date')
-        context['lid'] = latestentry.id
-        
-        # get all entries in the same day as latest
-        day_entries = Pledge.objects.campaign_active().filter(create_date__date=( latestentry.create_date ))
-        context['latest_day_summaryData'] = get_summaryData( "Current Day", day_entries, None)
-        
-        # all entries for the latest hour
-        latest_entries = get_entries_in_same_hour_as(latestentry)
-        context['latest_hour_summaryData'] = get_summaryData( "Current Hour", latest_entries, None) 
-        
-        # all entries for the previous hour
-        
-        if latestentry.create_date.hour > 0:
-            olderthan = datetime.datetime.combine( latestentry.create_date.date(), datetime.time( latestentry.create_date.hour -1, 59, 59, 999999, tzinfo=pytz.UTC))
-        else:
-            olderthan = datetime.datetime.combine( latestentry.create_date.date(), datetime.time( 23, 59, 59, 999999, tzinfo=pytz.UTC))
-            
-        # prevent exception when we're in our first hour
-        try:
-            previous_entry = Pledge.objects.campaign_active().filter(create_date__lte=olderthan).latest('create_date')
-            previous_entries = get_entries_in_same_hour_as(previous_entry)
-            context['previous_hour_summaryData'] = get_summaryData( "Previous Hour", previous_entries, None)
-        except Pledge.DoesNotExist:
-            pass
-        
-        # initial entries context for the accordion list
-        context['entries'] = Pledge.objects.campaign_active().all().order_by('-id')[:15]
-        return render(request, 'main/dashboard.html', context)
+#     try:
+    context = {}
+    context['overall_totals_summaryData'] = get_summaryData( "Campaign Overall", Pledge.objects.campaign_active().all(), None )
     
-    except:
-        return render(request, 'main/index.html', {})
+    # get latest entry
+    latestentry = Pledge.objects.campaign_active().all().latest('create_date')
+    context['lid'] = latestentry.id
+    
+    # get all entries in the same day as latest
+    day_entries = Pledge.objects.campaign_active().filter(create_date__date=( latestentry.create_date ))
+    context['latest_day_summaryData'] = get_summaryData( "Current Day", day_entries, None)
+    context['latest_day_hourlyBreakdownHREFLink'] = '/hourlyBreakdown/?label=Today&list=' + str(encode_entries(day_entries))
+    
+    # all entries for the latest hour
+    latest_entries = get_entries_in_same_hour_as(latestentry)
+    context['latest_hour_summaryData'] = get_summaryData( "Current Hour", latest_entries, None) 
+    
+    # all entries for the previous hour
+    
+    if latestentry.create_date.hour > 0:
+        olderthan = datetime.datetime.combine( latestentry.create_date.date(), datetime.time( latestentry.create_date.hour -1, 59, 59, 999999, tzinfo=pytz.UTC))
+    else:
+        olderthan = datetime.datetime.combine( latestentry.create_date.date(), datetime.time( 23, 59, 59, 999999, tzinfo=pytz.UTC))
+        
+    # prevent exception when we're in our first hour
+    try:
+        previous_entry = Pledge.objects.campaign_active().filter(create_date__lte=olderthan).latest('create_date')
+        previous_entries = get_entries_in_same_hour_as(previous_entry)
+        context['previous_hour_summaryData'] = get_summaryData( "Previous Hour", previous_entries, None)
+    except Pledge.DoesNotExist:
+        print("WTF")
+        pass
+    
+    # initial entries context for the accordion list
+    context['entries'] = Pledge.objects.campaign_active().all().order_by('-id')[:15]
+    return render(request, 'main/dashboard.html', context)
+    
+#     except:
+#         return render(request, 'main/index.html', {})
     
     
 def get_entries_in_same_hour_as(entry):
@@ -159,14 +162,12 @@ def TATsettings(request):
 
 import warnings
 def report(request):
-    
-    rt = Timer()
-    
+
     context = {}
     daySummary = OrderedDict()
     localtz = pytz.timezone( settings.TIME_ZONE ) # https://stackoverflow.com/questions/24710233/python-convert-time-to-utc-format
     campaignid = 0
-    
+
     if request.user.is_authenticated:
         context['campaigns'] = get_campaigns()
     
@@ -198,7 +199,7 @@ def report(request):
             context['postSummary'] = get_summaryData("Post-Sharathon Dollars", postSummary, None)
             context['postSlug'] = "After " + datetime.datetime.strftime(end_date, '%m/%d/%Y')
     else:
-        print("Active camp begin: " + rt.elapsed())
+
         context['campaign_name'] = "Active Campaign"
         days = Pledge.objects.campaign_active().datetimes('create_date', 'day', 'DESC', localtz)
         fullSummary = Pledge.objects.campaign_active().all()
@@ -223,46 +224,50 @@ def report(request):
             context['postSlug'] = "After " + datetime.datetime.strftime(end_date, '%m/%d/%Y')
     
     
-    context['fullSummary'] = get_summaryData("Grand Total Overall", fullSummary, None)
-
-    dayDetail = request.GET.get('dayDetail', None)
-    
-    print("contexts loaded: " + rt.elapsed())
+    context['fullSummary'] = get_summaryData("Grand Total Overall", fullSummary, None, 15)
     
     for day in days:
-        print("Handeling days: " + rt.elapsed())
-        label = context['campaign_name'] + " » " + calendar.day_name[day.weekday()] + ", " + str(day.month) + "/" + str(day.day) + "/" + str(day.year)
-          
+        formattedDate = calendar.day_name[day.weekday()] + ", " + str(day.month) + "/" + str(day.day) + "/" + str(day.year)
+        label = context['campaign_name'] + " » " + formattedDate
+           
         if campaignid > 0:
             entries = Pledge.objects.campaign_past_id( campaignid ).filter(create_date__date=datetime.datetime(day.year, day.month, day.day, 0,0, tzinfo=localtz)).order_by('create_date') 
         else:
             entries = Pledge.objects.campaign_active().filter(create_date__date=datetime.datetime(day.year, day.month, day.day, 0,0, tzinfo=localtz)).order_by('create_date')
-          
+           
         count = entries.count()
-          
-        if dayDetail == day.date().__str__():
-            context['date'] = datetime.date(day.year, day.month, day.day)
-            context['hourlyBreakdown'] = hourlyBreakdown( context['campaign_name'], entries)
-                          
+        encoded_dayEntries = encode_entries(entries)
+                           
         daySummary[day.date().__str__()] = {
             'dayDetail': day.date().__str__(), 
             'label': label, 
-            'count': count, 
-            'summaryData': get_summaryData(label, entries, None)
+            'count': count,
+            'formattedDate': formattedDate,
+            'encoded_dayEntries': encoded_dayEntries
         }
-        context['daySummary'] = daySummary
-    
-    print("ending: " + rt.elapsed())
-    
+        
+    context['daySummary'] = daySummary
+      
     return render(request, 'main/report.html', context)
    
     
+def hourlyBreakdownPage(request):
+    context = {}
+    entries = decode_entries(request.GET.get('list'))
+    context['label'] = request.GET.get('label')
+    context['summaryData'] = get_summaryData(context['label'], entries, Station.objects.all(), 'ALL' )
+    context['hourlyBreakdown'] = hourlyBreakdown(entries)
+    
+
+    return render(request, 'main/hourlyBreakdown.html', context)
+
     
 def date_hour(_datetime):
     _dt = _datetime.astimezone( pytz.timezone( settings.TIME_ZONE))
     return _dt.strftime("%I:00 %p") #ex: 05:00 PM
 
-def hourlyBreakdown(campaignName, entries):
+
+def hourlyBreakdown(entries):
     hbd = OrderedDict()
     
     groups = itertools.groupby(entries, lambda x:date_hour( x.create_date)) 
@@ -276,9 +281,9 @@ def hourlyBreakdown(campaignName, entries):
         createdate = entry.create_date
         timestring = createdate.astimezone( pytz.timezone( settings.TIME_ZONE ))
         
-        label = campaignName + " » " + group + " Breakdown for " + timestring.strftime("%b %d, %Y") 
+        label = group + timestring.strftime(" %A, %b %d, %Y") 
 
-        hbd[group] = {'count': len(hrlyids), 'summaryData': get_summaryData(label, qs, None), 'entries': qs}
+        hbd[group] = {'count': len(hrlyids), 'summaryData': get_summaryData(label, qs, None, 'ALL'), 'entries': qs}
          
     return hbd
 
@@ -340,7 +345,7 @@ def get_taglist(entries, topnum):
         #
         # a pickle of the query:
         # b'\x80\x03cdjango.db.models.sql.query\nQuery\nq\x00)\x81q\x01}q\x02(X\x05\x00\x00\x00modelq\x03cmain.models\nPledge\nq\x04X\x0e\x00\x00\x00alias_refcountq\x05}q\x06(X\x0b\x00\x00\x00main_pledgeq\x07K\x00X\x12\x00\x00\x00tagging_taggeditemq\x08K\x01uX\t\x00\x00\x00alias_mapq\tccollections\nOrderedDict\nq\n)Rq\x0bh\x07cdjango.db.models.sql.datastructures\nBaseTable\nq\x0c)\x81q\r}q\x0e(X\n\x00\x00\x00table_nameq\x0fh\x07X\x0b\x00\x00\x00table_aliasq\x10h\x07ubsX\x10\x00\x00\x00external_aliasesq\x11cbuiltins\nset\nq\x12]q\x13\x85q\x14Rq\x15X\t\x00\x00\x00table_mapq\x16}q\x17(h\x07]q\x18h\x07ah\x08]q\x19h\x08auX\x0c\x00\x00\x00default_colsq\x1a\x88X\x10\x00\x00\x00default_orderingq\x1b\x88X\x11\x00\x00\x00standard_orderingq\x1c\x88X\x06\x00\x00\x00selectq\x1d]q\x1eX\x06\x00\x00\x00tablesq\x1f]q (h\x07h\x08eX\x05\x00\x00\x00whereq!cdjango.db.models.sql.where\nWhereNode\nq")\x81q#}q$(X\x08\x00\x00\x00childrenq%]q&(cdjango.db.models.sql.where\nExtraWhere\nq\')\x81q(}q)(X\x04\x00\x00\x00sqlsq*]q+(X)\x00\x00\x00"tagging_taggeditem".content_type_id = %sq,X \x00\x00\x00"tagging_taggeditem".tag_id = %sq-X3\x00\x00\x00"main_pledge"."id" = "tagging_taggeditem".object_idq.eX\x06\x00\x00\x00paramsq/]q0(K\x02K\x05eubh\')\x81q1}q2(h*]q3(X)\x00\x00\x00"tagging_taggeditem".content_type_id = %sq4X \x00\x00\x00"tagging_taggeditem".tag_id = %sq5X3\x00\x00\x00"main_pledge"."id" = "tagging_taggeditem".object_idq6eh/]q7(K\x02K\x05eubeX\t\x00\x00\x00connectorq8X\x03\x00\x00\x00ANDq9X\x07\x00\x00\x00negatedq:\x89X\x12\x00\x00\x00contains_aggregateq;\x89ubX\x0b\x00\x00\x00where_classq<h"X\x08\x00\x00\x00group_byq=NX\x08\x00\x00\x00order_byq>]q?X\x08\x00\x00\x00low_markq@K\x00X\t\x00\x00\x00high_markqANX\x08\x00\x00\x00distinctqB\x89X\x0f\x00\x00\x00distinct_fieldsqC]qDX\x11\x00\x00\x00select_for_updateqE\x89X\x18\x00\x00\x00select_for_update_nowaitqF\x89X\x1d\x00\x00\x00select_for_update_skip_lockedqG\x89X\x0e\x00\x00\x00select_relatedqH\x89X\r\x00\x00\x00values_selectqI]qJX\x0c\x00\x00\x00_annotationsqKNX\x16\x00\x00\x00annotation_select_maskqLNX\x18\x00\x00\x00_annotation_select_cacheqMNX\t\x00\x00\x00max_depthqNK\x05X\n\x00\x00\x00combinatorqONX\x0e\x00\x00\x00combinator_allqP\x89X\x10\x00\x00\x00combined_queriesqQ)X\x06\x00\x00\x00_extraqRNX\x11\x00\x00\x00extra_select_maskqSNX\x13\x00\x00\x00_extra_select_cacheqTNX\x0c\x00\x00\x00extra_tablesqUh\x08X\x12\x00\x00\x00tagging_taggeditemqV\x86qWX\x0e\x00\x00\x00extra_order_byqX)X\x10\x00\x00\x00deferred_loadingqYh\x12]qZ\x85q[Rq\\\x88\x86q]X\x0c\x00\x00\x00used_aliasesq^h\x12]q_\x85q`RqaX\x10\x00\x00\x00filter_is_stickyqb\x89X\x08\x00\x00\x00subqueryqc\x89X\x07\x00\x00\x00contextqd}qeX\n\x00\x00\x00_forced_pkqf\x89ub.'
-        
+        print("get_taglist EXCEPTION")
         idlist = [str(entry.id) for entry in entries]            
         entries = Pledge.objects.filter(id__in=idlist)
         
@@ -351,42 +356,45 @@ def get_taglist(entries, topnum):
     return None
 
 
-def get_summaryData(label, entries, stations):
+def get_summaryData(label, entries, stations=None, number_of_tags=None):
     
-    sdt = Timer() 
-    print("IN get_summaryData " + str(label) + " count of: " + str(entries.count()))
     if entries == None:
         entries = Pledge.objects.campaign_active().all()
 
     total_entries = encode_entries(entries)
     total_dollars = entries.aggregate(Sum('amount'))['amount__sum']
     total_pledges = entries.count()
-    
+
     nd_entries = entries.filter(is_first_time_donor__exact=True)
     new_entries = encode_entries(nd_entries)
     new_donors = nd_entries.count()
     new_donor_dollars = nd_entries.aggregate(Sum('amount'))['amount__sum']
-    
+
     md_entries = entries.filter(is_monthly__exact=True)
     monthly_entries = encode_entries(md_entries)
     monthly_donors = md_entries.count()
     monthly_dollars = md_entries.aggregate(Sum('amount'))['amount__sum']
-    
+
     sd_entries = entries.filter(is_monthly__exact=False)
     single_entries = encode_entries(sd_entries)
     single_donors = sd_entries.count()
     single_dollars = sd_entries.aggregate(Sum('amount'))['amount__sum']
-    
-    # if we were told station data, we need full tags too
+
     stationData = {}
     if stations:
         for station in stations:
             station_entries = entries.filter(station=station)
             if station_entries.count() > 0:
                 stationData[station.callsign] = get_summaryData(None, station_entries, None)        
+
+
+    if number_of_tags == 'ALL':
         tags = get_taglist(entries, None)
+    elif number_of_tags != None:
+        tags = get_taglist(entries, number_of_tags)
     else:
         tags = get_taglist(entries, 7)
+
 
     
     summaryData = {
@@ -408,7 +416,7 @@ def get_summaryData(label, entries, stations):
       
     if len(stationData) > 0:
         summaryData['stationData'] = stationData
-    print("OUT get_summaryData: " + sdt.elapsed())
+
     return summaryData
 
   
@@ -416,7 +424,7 @@ def entryListDetail(request):
     entries = decode_entries(request.GET.get('list'))
     
     label = request.GET.get('label')
-    summaryData = get_summaryData(label, entries, Station.objects.all() )
+    summaryData = get_summaryData(label, entries, Station.objects.all(), 'ALL' )
     return render(request, 'main/entryListDetail.html', { 'label': label, 'summaryData': summaryData, 'entries': entries[:15] })
   
 

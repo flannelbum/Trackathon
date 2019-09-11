@@ -3,29 +3,47 @@
 {% block title %}Report{% endblock %}
 {% block content %}
 <div class="container-fluid">
-	<div class="row">
-		<div class="col-sm-12">
-		{% if user.is_authenticated %}
-			<div class="dropdown">
-				<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-				Select a Campaign to view <span class="caret"></span>
-				</button>
-				<ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-					<li><a href='/report/'>Active campaign</a></li>
-					<li role="separator" class="divider"></li>
-					{% for id,name in campaigns.items %}
-					<li><a href='/report/?campaignid={{ id }}'>{{ name }}</a></li>
-					{% endfor %}
-				</ul>
-			</div>		
-      {% endif %}
-      
-		<h2><i>{{ campaign_name }}</i></h2>
-		{% with summaryData=fullSummary %}
-			{% include 'main/summary.html' %}
-		{% endwith %}
-	    </div>
-	  </div>
+  <div class="row">
+    <div class="col-sm-4">
+    {% if user.is_authenticated %}
+      <div class="dropdown">
+        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+        Select a Campaign to view <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+          <li><a href='/report/'>Active campaign</a></li>
+          <li role="separator" class="divider"></li>
+          {% for id,name in campaigns.items %}
+          <li><a href='/report/?campaignid={{ id }}'>{{ name }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>		
+    {% endif %}
+
+      <div class="dropdown">
+        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownDayDetail" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+        Select a day for Hourly Breakdown <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownDayDetail">
+          {% for day, entry in daySummary.items %}
+          <li><a href='/hourlyBreakdown/?label={{ entry.label }}&list={{ entry.encoded_dayEntries }}'>{{ entry.formattedDate}} - ({{ entry.count }})</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-sm-4">    
+      <h2><i>{{ campaign_name }}</i></h2>
+        {% with summaryData=fullSummary %}
+          {% include 'main/summary.html' %}
+        {% endwith %}
+    </div>
+	</div>
+	
+	
 	  {% if start_date and end_date %}
 	  <div class="row">
 	    <div class="col-sm-4">
@@ -45,37 +63,9 @@
 		</div>
 		{% endif %}
     </div>
-  </div>
-   <div class="row">
-    <div class="col-sm-6">
-    	
-	  <h2>Daily Breakdown</h2>
-		{% for day, entry in daySummary.items %}
-          {% with summaryData=entry.summaryData %}
-            {% include 'main/summary.html' %}
-          {% endwith %}
-          {% if request.GET.campaignid %}
-            <a href="/report/?campaignid={{ request.GET.campaignid }}&dayDetail={{ entry.dayDetail }}">See Hourly Breakdown</a><br/><br/><br/>
-          {% else %}
-            <a href="/report/?dayDetail={{ entry.dayDetail }}">See Hourly Breakdown</a><br/><br/><br/>
-          {% endif %}
-       {% endfor %} 
-        
-    </div>
-    <div class="col-sm-6">
 
-      {% if date %}
-        <h2>Hourly Breakdown - {{ date }}</h2>
-          {% for hour, entry in hourlyBreakdown.items %}
-	        {% with summaryData=entry.summaryData %}
-	      	  {% include 'main/summary.html' %}
-	      	{% endwith %}
-	      {% endfor %}
-	      	
-	 {% endif %}	
 
-    </div>
-  </div>
+</div>
 {% endblock %}
 
 

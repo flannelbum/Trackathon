@@ -17,7 +17,7 @@
 				</div>
 				<div class="col-md-3">
 					<div id="summary_day">
-						{% with summaryData=latest_day_summaryData %}
+						{% with summaryData=latest_day_summaryData HREFLINK=latest_day_hourlyBreakdownHREFLink %}
 						{% include 'main/summary.html' %}
 						{% endwith %}
 					</div>

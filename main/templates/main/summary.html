@@ -109,9 +109,13 @@
 		</table>
 	</div>
 	{% else %}
-	{% if summaryData.label %}
-	<h4>{{ summaryData.label }}</h4>
-	{% if slug %}<h6>{{ slug }}</h6>{% endif %}
+	  
+	  {% if summaryData.label %}
+	  {% if HREFLINK %}<h4><a href="{{ HREFLINK }}">{{ summaryData.label}}</a></h4>
+	  {% else %}<h4>{{ summaryData.label }}</h4>
+	  {% endif %}
+
+    {% if slug %}<h6>{{ slug }}</h6>{% endif %}
 	{% endif %}
 	<div class="row"><!-- brief summary -->
 	<ul>

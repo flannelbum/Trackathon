@@ -1,0 +1,41 @@
+{% extends 'main/index.html' %}
+{% block title %}Hourly Breakdown - {% if label %}{{ label }}{% endif %}{% endblock %}
+{% block content %}
+
+<div class="container-fluid">
+
+{% comment %}
+{% if label %}<h1>{{ label }}</h1>{% endif %}
+	<div class="row">
+	  {% include 'main/summary.html' %}
+	</div>
+{% endcomment %}
+
+	<div class="row">
+	  <h2>Hourly Breakdown - {{ label }}</h2>
+	</div>
+
+	<div class="row">
+	{% for hour, entry in hourlyBreakdown.items %}
+		{% with summaryData=entry.summaryData %}
+		  {% include 'main/summary.html' %}
+		{% endwith %}
+	{% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block style %}
+<link href="/static/main/css/entrylist.css" rel="stylesheet" />	
+{% endblock %}
+
+{% block javascript %}
+<script src="/static/main/js/entryeffects.js"></script>
+<script type="text/javascript">
+	// we don't want users able to change the thanked status as we're not handling that with this view
+	$('.panel-group input[type=checkbox]').attr('disabled','true');
+
+	// the report pill should be active if we're on this page
+	$('#nav_report').addClass('active');
+</script>
+{% endblock %}
