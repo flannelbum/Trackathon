@@ -27,6 +27,8 @@ function getLid(){
   };
 }
 
+
+// returns the lowest panel-collapse id number on the page
 function getLid2(){
   
   // create an array
@@ -67,6 +69,7 @@ function updateEntries(){
         $.post("/ajax_thank_id/", { 'thankedid': id, 'csrfmiddlewaretoken': csrf })
       });
   
+      // request the dashboard but only pull and update the #summary
       $.get('/', function (response) {
         var source = $(''+response+'');
         $('#summary').html(source.find('#summary').html());
@@ -86,7 +89,7 @@ $(document).ready(function() {
   
   $("#spinner").hide();
   
-  $.get("/static/main/js/entryeffects.js");
+//  $.get("/static/main/js/entryeffects.js");
   
  
   // Start Hide/Show
