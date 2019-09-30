@@ -48,6 +48,14 @@ function getLid2(){
 }
 
 
+function updateSummary(){
+    $.get('/', function (response) {
+        var source = $(''+response+'');
+        $('#summary').html(source.find('#summary').html());
+      });
+}
+
+
 // runs every 3 seconds to check for new entries
 function updateEntries(){
   //update list of entries
@@ -70,10 +78,7 @@ function updateEntries(){
       });
   
       // request the dashboard but only pull and update the #summary
-      $.get('/', function (response) {
-        var source = $(''+response+'');
-        $('#summary').html(source.find('#summary').html());
-      });
+      updateSummary();
       
       data.show('normal');
       insertHourMarkers(); // from  /static/main/js/insertingDateFunctions.js
@@ -138,6 +143,7 @@ $(document).ready(function() {
             $(this).closest(".panel-collapse").parent().find('.glyphicon-alert').remove();
             $(this).attr("disabled", true);
             $.post("/ajax_thank_id/", { 'thankedid': id, 'csrfmiddlewaretoken': csrf })
+            updateSummary();
           });
           
           $("#spinner").hide();
@@ -188,6 +194,7 @@ $(document).ready(function() {
     $(this).closest(".panel-collapse").parent().find('.glyphicon-alert').remove();
     $(this).attr("disabled", true);
     $.post("/ajax_thank_id/", { 'thankedid': id, 'csrfmiddlewaretoken': csrf })
+    updateSummary()
   });
   // End Thanked handler
 

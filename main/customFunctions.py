@@ -7,9 +7,20 @@ from django.conf import settings
 from django.utils import lorem_ipsum
 
 from main.forms import PledgeEntryForm
-from main.models import Pledge, Station
+from main.models import Pledge, Station, GivingLevel
 from tagging.models import Tag
 
+
+
+def autotag(entry):
+    # applies tags if the entry falls within a giving level
+    for level in GivingLevel.objects.filter(campaign__exact=None):
+        if entry.amount >= level.low_amount and entry.amount <= level.high_amount:
+            tags = level.tag + ', '
+            for tag in list(entry.tags.values_list('name', flat=True)):
+                tags += tag + ', '
+            entry.tags = tags
+            entry.save()
 
 
 def int_or_0(value):
@@ -27,7 +38,11 @@ def getRandomPledgeForm():
     
     form.firstname = entry['firstname']
     form.lastname = entry['lastname']
+    form.address1 = entry['address1']
+    form.address2 = entry['address2']
     form.city = entry['city']
+    form.state = entry['state']
+    form.zip = entry['zip']
     form.is_anonymous = entry['is_anonymous']
     form.is_first_time_donor = entry['is_first_time_donor']
     form.is_monthly = entry['is_monthly']
@@ -49,8 +64,11 @@ def generateRandomPledge(date, create_entry):
     # Pool of values
     firstnames = ['John', 'Paul', 'George', 'Ringo', 'Christopher', 'David', 'Jane', 'Julia', 'Prudence', 'Cindy', 'Marge', 'Homer', 'Bart', 'Lisa', 'Maggie', 'Donna', 'Ron', 'Sean', 'Melanie', 'Colleen', 'Liam', 'Alan', 'Noel', 'Lilly', 'Mike', 'Terry', 'Jason', 'Jill', 'Tim']
     lastnames = ['Smith', 'Johnson', 'Davidson', 'Schwartz', 'Doe', 'Miller', 'Washington', 'Jefferson', 'Jones', 'Mayhew', 'Robertson', 'Dinkle', 'Westinghouse', 'Burns', 'Simpson', 'Harrison', 'Starr', 'McCartney', 'Lennon']
+    streetnames = ['Glendale', 'Arlington', 'Detroit', 'Key', 'Greenvally', 'Oak', 'Ayers', 'Barrows', 'Pickle', 'Rugby']
+    streettypes = ['Dr', 'Ave', 'Blvd', '']
     cities = ['Toledo', 'Perrysburg', 'Maumee', 'Port Clinton', 'Wallbridge', 'Sylvania', 'Holland', 'Swanton', 'Millbury', 'Rossford', 'Northwood', 'Lime City', 'Monclova', 'Genoa', ]
-   
+    states = ['OH', 'MI']
+    
     try:   
         tags = ",".join(sample(list(Tag.objects.all().values_list('name', flat=True)),2))
     except(ValueError):
@@ -61,7 +79,11 @@ def generateRandomPledge(date, create_entry):
         'create_date': date,
         'firstname': str(choice(firstnames)),
         'lastname': str(choice(lastnames)),
+        'address1': str(choice(range(0,9999))) + " " + str(choice(streetnames)) + " " + str(choice(streettypes)),
+        'address2': "",
         'city': str(choice(cities)),
+        'state': str(choice(states)),
+        'zip': str(choice(range(43000,43999))),
         'amount': randint(1,70),
         'is_anonymous': choice([True, False]),
         'is_first_time_donor': choice([True, False]),
@@ -78,7 +100,11 @@ def generateRandomPledge(date, create_entry):
             create_date = entrydict['create_date'],
             firstname = entrydict['firstname'],
             lastname = entrydict['lastname'],
+            address1 = entrydict['address1'],
+            address2 = entrydict['address2'],
             city = entrydict['city'],
+            state = entrydict['state'],
+            zip = entrydict['zip'],
             amount = entrydict['amount'],
             is_anonymous = entrydict['is_anonymous'],
             is_first_time_donor = entrydict['is_first_time_donor'],
@@ -107,37 +133,6 @@ def generateDay(year, month, day, perHour=None):
             for minute in range(0,perHour):
                 generateRandomPledge(localtz.localize(datetime(year, month, day, hour, minute, 0)),True)
 
-
-def getRandomPledgeForm_old():
-    # http://stackoverflow.com/questions/3540288/how-do-i-read-a-random-line-from-one-file-in-python
-    # firstname,lastname,city,ftdonor,beenthanked,amount,singleormonthly,callsign,parish,groupcallout,comment
-    myfile = settings.BASE_DIR + '/main/static/main/randomData.csv'
-    lines = open(myfile).read().splitlines()
-    myline = choice(lines)
-
-    form = PledgeEntryForm()
-    myline = myline.split(',')
-    form.firstname = myline[0]
-    form.lastname = myline[1]
-    form.city = myline[2]
-    
-    # translate random data csv instead of rewritting it for now
-    print( str(myline[3]) + " " + str(myline[6]))
-    ml3 = False
-    ml6 = False
-    if str(myline[3]) == 'TRUE':
-        ml3 = True
-    if str(myline[6]) == 'monthly':
-        ml6 = True
-    
-    form.is_first_time_donor = ml3
-    form.is_monthly = ml6
-    
-    form.amount = myline[5]
-    form.station = Station.objects.get(callsign=myline[7])
-    form.comment = myline[10]
-    
-    return form
 
 
 def prettydate(d):

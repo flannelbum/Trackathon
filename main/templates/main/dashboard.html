@@ -8,23 +8,25 @@
 		<a id="hs_totals" href="#collapse" data-toggle="collapse">Hide Totals</a>
 		<div class="row collapse in" id="collapse">
 			<div id="summary">
-				<div class="col-md-3">
+			{% if False %}
+ 				<div class="col-md-3">
 					<div id="overall_totals_summaryData">
 						{% with summaryData=overall_totals_summaryData slug="(Includes Pre-Sharathon Dollars)"%}
 						{% include 'main/summary.html' %}
 						{% endwith %}
 					</div>
 				</div>
+			{%endif%}
 				<div class="col-md-3">
 					<div id="summary_day">
-						{% with summaryData=latest_day_summaryData HREFLINK=latest_day_hourlyBreakdownHREFLink %}
+						{% with summaryData=latest_day_summaryData HREFLINK=latest_day_hourlyBreakdownHREFLink goal=goal_daily %}
 						{% include 'main/summary.html' %}
 						{% endwith %}
 					</div>
 				</div>
 				<div class="col-md-3">
 					<div id="summary_latest">
-						{% with summaryData=latest_hour_summaryData %}
+						{% with summaryData=latest_hour_summaryData goal=goal_hourly %}
 						{% include 'main/summary.html' %}
 						{% endwith %}
 					</div>
@@ -32,7 +34,7 @@
 				{% if previous_hour_summaryData %}
 				<div class="col-md-3">
 					<div id="summary_previous">
-						{% with summaryData=previous_hour_summaryData %}
+						{% with summaryData=previous_hour_summaryData goal=goal_previous_hourly %}
 						{% include 'main/summary.html' %}
 						{% endwith %}
 					</div>

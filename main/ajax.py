@@ -1,9 +1,11 @@
 from django.http.response import HttpResponse
 from django.shortcuts import render
+from django.utils import timezone
 
 from main.models import Pledge
 from main.customFunctions import int_or_0
 from main.views import decode_entries
+from main.GoalTender import update_goals
 
 
 
@@ -27,13 +29,15 @@ def ajax_get_next_entries(request):
     return render(request, 'main/multiple_pledges.html', { 'entries': entries })
   
  
- 
+#TODO: update applicable goal(s) raised amount(s) by thanked pledge object amount
 def ajax_thank_id(request):
     thankedid = int_or_0(request.POST.get('thankedid', None))
     if thankedid > 0:
         p = Pledge.objects.get(pk=thankedid)
         p.is_thanked = True
+        p.thanked_datetime = timezone.now()
         p.save()
+        update_goals(p, p.amount)
     return HttpResponse(status=204)
  
 

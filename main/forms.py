@@ -5,7 +5,7 @@ from tagging_autocomplete.widgets import TagAutocomplete
 
 from main.models import Station
 
-
+#TODO: Add Waive Gift widget/handling.  Re-order form where nessesary
 class PledgeEntryForm(forms.Form):
     
     
@@ -54,6 +54,30 @@ class PledgeEntryForm(forms.Form):
         return self.cleaned_data['lastname'].upper()
     
     
+    address1 = forms.CharField(
+        required=True,
+        max_length=100,
+        widget=TextInput(
+            attrs={'autocomplete':'off'}
+        ),
+        label='Address Line 1',
+    )
+    def clean_address1(self):
+        return self.cleaned_data['address1'].upper()
+    
+    
+    address2 = forms.CharField(
+        required=False,
+        max_length=100,
+        widget=TextInput(
+            attrs={'autocomplete':'off'}
+        ),
+        label='Address Line 2',
+    )
+    def clean_address2(self):
+        return self.cleaned_data['address2'].upper()
+    
+    
     city = forms.CharField(
         required=False,
         max_length=35,
@@ -65,6 +89,28 @@ class PledgeEntryForm(forms.Form):
     def clean_city(self):
         return self.cleaned_data['city'].upper()
   
+    
+    state = forms.CharField(
+        required=False,
+        max_length=2,
+        widget=TextInput(
+            attrs={'autocomplete':'off'}
+            ),
+        label='State',
+    )
+    def clean_state(self):
+        return self.cleaned_data['state'].upper()
+    
+    
+    zip = forms.CharField(
+        required=False,
+        max_length=5,
+        widget=TextInput(
+            attrs={'autocomplete':'off'}
+            ),
+        label='Zip',
+    )
+        
     
     is_first_time_donor = forms.BooleanField(
         required=False,

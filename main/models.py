@@ -4,6 +4,7 @@ from django.db import models
 from tagging.registry import register
 
 
+
 class TATSettingManager(models.Manager):
     
     def getSetting(self, setting_name):
@@ -44,7 +45,6 @@ class TATSetting(models.Model):
     objects = TATSettingManager()
 
 
-
 class Campaign(models.Model):
     name = models.CharField(max_length=200)
     start_date = models.DateField(default=None, blank=True, null=True)
@@ -52,7 +52,56 @@ class Campaign(models.Model):
     
     def __str__(self):
         return str(self.name)
-        
+
+
+class Goal(models.Model):
+    GOAL_TYPES = [
+        ('overall','overall'),
+        ('daily','daily'),
+        ('hourly','hourly'),
+        ]
+    name = models.CharField(max_length=200, unique=False, blank=False, null=False)
+    goal_type = models.CharField(max_length=7, choices=GOAL_TYPES, blank=False, null=False) 
+    campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT, null=True, blank=True)
+    goal_amount = models.DecimalField(max_digits=9,decimal_places=2)
+    raised_amount = models.DecimalField(max_digits=9,decimal_places=2)
+    start_datetime = models.DateTimeField(default=None, blank=False, null=False)
+    end_datetime = models.DateTimeField(default=None, blank=False, null=False) 
+    
+    def __str__(self):
+        return self.goal_type + " goal - " + self.name + " (" + self.goal_percent() + "%) - $" + str(self.raised_amount) + " of $" + str(self.goal_amount)
+    
+    def goal_percent(self):
+        return str(round( self.raised_amount / self.goal_amount * 100 ))
+            
+            
+class GiftAttribute(models.Model):
+    name = models.CharField(max_length=200)
+    campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT, null=True, blank=True)
+    disable = models.BooleanField(default=False)
+
+
+class GiftOption(models.Model):
+    name = models.CharField(max_length=200, unique=False, blank=False, null=False)
+    campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT, null=True, blank=True)
+    value = models.DecimalField(max_digits=9,decimal_places=2)
+    attributes = models.ManyToManyField(GiftAttribute, blank=True)
+    
+    def __str__(self):
+        return self.name
+    
+
+class GivingLevel(models.Model):
+    name = models.CharField(max_length=200, unique=False, blank=False, null=False)
+    campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT, null=True, blank=True)
+    low_amount = models.DecimalField(max_digits=9,decimal_places=2)
+    high_amount = models.DecimalField(max_digits=9,decimal_places=2)
+    tag = models.CharField(max_length=50, unique=False, blank=False, null=False)
+    gift_option = models.ForeignKey(GiftOption, on_delete=models.PROTECT, null=True, blank=True)
+    
+    def __str__(self):
+        return self.name + " ($" + str(self.low_amount) + " - $" + str(self.high_amount) + ")"
+    
         
 class Station(models.Model):
     name = models.CharField(max_length=200)
@@ -100,13 +149,20 @@ class Pledge(models.Model):
     is_anonymous = models.BooleanField(default=False)
     is_first_time_donor = models.BooleanField(default=False)
     is_thanked = models.BooleanField(default=False)
+    thanked_datetime = models.DateTimeField(default=None, null=True, blank=True)
     is_monthly = models.BooleanField(default=False)
     create_date = models.DateTimeField(default=timezone.now)
     station = models.ForeignKey(Station, on_delete=models.PROTECT, null=True)
+    address1 = models.CharField(max_length=100, default=None)
+    address2 = models.CharField(max_length=100, default=None, null=True)
     city = models.CharField(max_length=35, default=None)
+    state = models.CharField(max_length=2, default="OH")
+    zip = models.CharField(max_length=5, default=None)
     phone_number = models.CharField(max_length=13, blank=True)
     comment = models.TextField(default=None)
     campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT, null=True, blank=True)
+    gift_options = models.ManyToManyField(GiftOption, blank=True)
+    waived_gifts = models.ManyToManyField(GiftOption, blank=True, related_name='waived_gifts')
 
     def __str__(self):
         title = "$"+str(self.amount) +" - "+ self.firstname +" "+ self.lastname
@@ -121,3 +177,13 @@ class Pledge(models.Model):
     objects = PledgeCampaign()
     
 register(Pledge)
+
+
+#TODO: define GiftFulfillment __str__
+class GiftFulfillment(models.Model):
+    gift_option = models.ForeignKey(GiftOption, on_delete=models.PROTECT, blank=False, null=False)
+    pledge = models.ForeignKey(Pledge, on_delete=models.PROTECT, blank=False, null=False)
+    is_fulfilled = models.BooleanField(default=False)
+    fulfilled_date = models.DateField(default=None, null=True, blank=True)
+    notes = models.TextField(default=None, null=True, blank=True)
+    

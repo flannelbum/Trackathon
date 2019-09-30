@@ -11,9 +11,9 @@
 				{% if entry.is_thanked == False %}<span class="glyphicon glyphicon-alert"></span>{% endif %}
 				{% if entry.is_first_time_donor %}<span class="glyphicon glyphicon-heart"></span>{% endif %}
 				{% if entry.is_anonymous %}
-					{{ entry.amount | prepend_dollars }} - ANONYMOUS - {{ entry.city }} - {{ entry.station.callsign }}
+					{{ entry.amount | prepend_dollars }} - ANONYMOUS - {{ entry.city }} - {{ entry.station.callsign }} / {{ entry.station.name }}
 				{% else %}
-					{{ entry.amount | prepend_dollars }} - {{ entry.firstname }} {{ entry.lastname }} - {{ entry.city }} - {{ entry.station.callsign }}
+					{{ entry.amount | prepend_dollars }} - {{ entry.firstname }} {{ entry.lastname }} - {{ entry.city }} - {{ entry.station.callsign }} / {{ entry.station.name }}
 				{% endif %}
 			</div>
 		</h4>

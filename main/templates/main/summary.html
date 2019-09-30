@@ -116,8 +116,18 @@
 	  {% endif %}
 
     {% if slug %}<h6>{{ slug }}</h6>{% endif %}
+    {% if goal %}
+    <h5>Goal raised ${{ goal.raised_amount }} of ${{ goal.goal_amount }}</h5>
+    <div class="progress">
+      <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{ goal.goal_percent }}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{ goal.goal_percent }}%">
+        {{ goal.goal_percent }}%
+      </div>
+    
+    </div>
+    
+    {% endif %}
 	{% endif %}
-	<div class="row"><!-- brief summary -->
+  <div class="row"><!-- brief summary -->
 	<ul>
 		<li>Total Pledges 
 			<strong>
