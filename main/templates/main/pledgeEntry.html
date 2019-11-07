@@ -5,33 +5,31 @@
 <div class="container-fluid">
 	<div class="row">
 	
-		<div class="col-sm-6">
+    <div class="col-sm-12">
         {% if entryObject.id %}
         	<h3>Edit: {{ entryObject.amount | prepend_dollars}} - {{ entryObject.firstname }} {{ entryObject.lastname }}</h3>
         	<div id="pledgeFormContent">
         		{% include 'main/pledgeEntryForm.html' %}
         	</div>
         {% else %}
-  			<h2>Pledge Entry</h2>
         	<div id="pledgeFormContent">
         		{% include 'main/pledgeEntryForm.html' %}
   			</div>
   		{% endif %}
 		</div>
-	
-		<div class="col-sm-6">
+  </div>
+  
+	<div class="row">
+		<div class="col-md-12">
 			<h2>Recent Entries</h2>
-			<ul id="recenEntries" class="list-group">
-				<div class="container-fluid">
-					<div style="visibility:hidden" id="latestid">{{ latestid }}</div>
-					<div class="panel-group" id="accordion">
-						{% include 'main/multiple_pledges.html' %}
-					</div>
-				</div>
-			</ul>
+			<div style="visibility:hidden" id="latestid">{{ latestid }}</div>
+			<div class="panel-group" id="accordion">
+				{% include 'main/multiple_pledges.html' %}
+			</div>
 		</div>
 	</div>
 </div>
+
 {% endblock %}
 
 {% block javascript %}
@@ -57,6 +55,12 @@ input[type="checkbox"] {
   position:relative;
   left:10px;
   top:3px;
+}
+.indent {
+  margin-left: 15px;
+}
+th, td {
+  text-align: left;
 }
 </style>
 {% endblock %}

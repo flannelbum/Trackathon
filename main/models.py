@@ -4,7 +4,6 @@ from django.db import models
 from tagging.registry import register
 
 
-
 class TATSettingManager(models.Manager):
     
     def getSetting(self, setting_name):
@@ -80,6 +79,8 @@ class GiftAttribute(models.Model):
     campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT, null=True, blank=True)
     disable = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.name
 
 class GiftOption(models.Model):
     name = models.CharField(max_length=200, unique=False, blank=False, null=False)
@@ -87,10 +88,16 @@ class GiftOption(models.Model):
     value = models.DecimalField(max_digits=9,decimal_places=2)
     attributes = models.ManyToManyField(GiftAttribute, blank=True)
     
+    def has_attributes(self):
+        if self.attributes.count() > 0:
+            return True
+        else:
+            return False
+    
     def __str__(self):
         return self.name
     
-
+    
 class GivingLevel(models.Model):
     name = models.CharField(max_length=200, unique=False, blank=False, null=False)
     campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT, null=True, blank=True)
@@ -98,6 +105,12 @@ class GivingLevel(models.Model):
     high_amount = models.DecimalField(max_digits=9,decimal_places=2)
     tag = models.CharField(max_length=50, unique=False, blank=False, null=False)
     gift_option = models.ForeignKey(GiftOption, on_delete=models.PROTECT, null=True, blank=True)
+    
+    def has_gift_option(self):
+        if self.gift_option:
+            return True
+        else:
+            return False
     
     def __str__(self):
         return self.name + " ($" + str(self.low_amount) + " - $" + str(self.high_amount) + ")"
@@ -161,8 +174,6 @@ class Pledge(models.Model):
     phone_number = models.CharField(max_length=13, blank=True)
     comment = models.TextField(default=None)
     campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT, null=True, blank=True)
-    gift_options = models.ManyToManyField(GiftOption, blank=True)
-    waived_gifts = models.ManyToManyField(GiftOption, blank=True, related_name='waived_gifts')
 
     def __str__(self):
         title = "$"+str(self.amount) +" - "+ self.firstname +" "+ self.lastname
@@ -179,11 +190,12 @@ class Pledge(models.Model):
 register(Pledge)
 
 
-#TODO: define GiftFulfillment __str__
-class GiftFulfillment(models.Model):
-    gift_option = models.ForeignKey(GiftOption, on_delete=models.PROTECT, blank=False, null=False)
-    pledge = models.ForeignKey(Pledge, on_delete=models.PROTECT, blank=False, null=False)
-    is_fulfilled = models.BooleanField(default=False)
-    fulfilled_date = models.DateField(default=None, null=True, blank=True)
+class Gift(models.Model):
+    pledge = models.ForeignKey(Pledge, on_delete=models.CASCADE, blank=False, null=False)
+    waived = models.BooleanField(default=False)
+    is_fullfilled = models.BooleanField(default=False)
+    gift = models.ForeignKey(GiftOption, on_delete=models.CASCADE, blank=False, null=False)
+    attribute = models.ForeignKey(GiftAttribute, on_delete=models.CASCADE, blank=True, null=True)
     notes = models.TextField(default=None, null=True, blank=True)
+    
     

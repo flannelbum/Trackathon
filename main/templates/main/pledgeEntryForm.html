@@ -1,32 +1,88 @@
 {% if entryObject.id %}
-<form action="/editPledgeEntry/" method="POST" id="PledgeEntryForm" novalidate="novalidate">
+<form action="/editPledgeEntry/" method="POST" id="PledgeEntryForm" novalidate="novalidate" onsubmit="return validateForm()">
 {% else %}
-<form action="/pledgeEntry/" method="POST" id="PledgeEntryForm" novalidate="novalidate">
+<form action="/pledgeEntry/" method="POST" id="PledgeEntryForm" novalidate="novalidate" onsubmit="return validateForm()">
 {% endif %}
 
+{% if gift_options %}
+  {% if gift_options.waived %}
+    <input type="hidden" id="waived" value="{{ gift_options.waived }}">
+  {% endif %}
+  {% if gift_options.gift_attributes %}
+    <input type="hidden" id="gift_attributes" value="{{ gift_options.gift_attributes }}">
+  {% endif%}
+{% endif %}
+
+
 	{% csrf_token %}
-	<div class="form-group">
-		{% for field in form %}
-		{{ field.label_tag }}
-		{{ field }}
-		<div id="error" class="alert-warning">{{ field.errors.as_text }}</div>
-		{% endfor %}
-			
-		    
-		{% if entryObject.id %}
-		<input type="hidden" name="entryid" value="{{ entryid }}"/>
-		<input type="submit" value="Edit" />
-			{% if user.is_authenticated %}
-			<a href="/deletePledgeEntry/?entryid={{ entryid }}"> Delete entry</a>
-			{% endif %}
-		{% else %}
-		<input type="submit" value="Submit" />
-			{% if user.is_authenticated %}
-			 - <a href="/pledgeEntry/?getrandom=True">Add Random</a>
-			{% endif %}
-		{% endif%}
+	<div class="col-sm-6">
+		<div id="form1" class="form-group">
+		  <h2>Pledge Entry</h2>
+			{% for field in form %}
+			{{ field.label_tag }}
+			{{ field }}
+			<div id="error" class="alert-warning">{{ field.errors.as_text }}</div>
+			{% endfor %}
+				
+			    
+			{% if entryObject.id %}
+			<input type="hidden" name="entryid" value="{{ entryid }}"/>
+			<input type="submit" value="Edit" />
+				{% if user.is_authenticated %}
+				<a href="/deletePledgeEntry/?entryid={{ entryid }}"> Delete entry</a>
+				{% endif %}
+			{% else %}
+			<input type="submit" value="Submit" />
+				{% if user.is_authenticated %}
+				 - <a href="/pledgeEntry/?getrandom=True">Add Random</a>
+				{% endif %}
+			{% endif%}
+		</div>
 	</div>
+	
+	{% if gift_options %}
+	<div class="col-sm-6">
+		<div id="form2" class="form-group">
+		  <h2>Gift Options</h2>
+		     <table class="optionTable">
+	      <tr>
+	        <th class="center">Waive Gift?</th>
+	        <th>Gift Option</th>
+	      </tr>
+     
+        {% for level,selected_attribute in gift_options.items %}
+        {% if level.gift_option %}
+	      <tr id="tr_level_{{ level.gift_option.id}}" class="disabled">
+		      <td class="center">
+		        {% if level.gift_option.id in gift_options.waived %}
+		        <input id="cb_level_{{ level.gift_option.id }}" type="checkbox" style="transform:scale(1, 1)" name="waived" value="{{ level.gift_option.id }}" checked>
+		        {% else %}
+		        <input id="cb_level_{{ level.gift_option.id }}" type="checkbox" style="transform:scale(1, 1)" name="waived" value="{{ level.gift_option.id }}" disabled>
+		        {% endif %}
+		      </td>         
+		      <td>
+		        <strong>{{ level }}</strong><br/>
+            {{ level.gift_option }}
+            {% for attribute in level.gift_option.attributes.all %}
+              {% if selected_attribute == attribute.id %}
+              <input class="rb_level_{{ level.gift_option.id }}" type="radio" name="gift_attribute_{{ level.gift_option.id }}" value="{{ attribute.id }}" checked> {{ attribute }}
+              {% else %}
+              <input class="rb_level_{{ level.gift_option.id }}" type="radio" name="gift_attribute_{{ level.gift_option.id }}" value="{{ attribute.id }}" disabled> {{ attribute }}
+		          {% endif %}
+		        {% endfor %}
+		        {% if gift_option_message %}
+		        {{gift_option_message}}
+		        {% endif %}
+		        </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+	    </table>
+		</div>
+	</div>
+	{% endif %}
 </form>
+
 
 {% block javascript %}
 <script type="text/javascript">
@@ -36,15 +92,147 @@ $("input[name='phone_number']").keyup(function() {
     $(this).val($(this).val().replace(/^(\d{3})(\d{3})(\d)+$/, "($1)$2-$3"));
 });
 
+
+function enableGiftOptions(option) {
+	$('#tr_level_' + option).removeClass("disabled");
+	$('#cb_level_' + option).prop( "disabled", false);
+	$('.rb_level_' + option).prop( "disabled", false);
+}
+
+function disableGiftOptions() {
+	$('[id^=tr_level_]').addClass("disabled");
+	$('[id^=cb_level_]').prop( "disabled", true);
+	$('[class^=rb_level_]').prop( "disabled", true);
+}
+
+function checkAmount(amount){
+	  if (amount === null){
+		  amount = $("input[name='amount']").val();
+	  }
+	  $.get('/ajax_get_qualified_gift_options/', { 'amount':amount, }, function(options, status) {
+		  if (status == 'success' ) {    
+	      disableGiftOptions();
+	      for(var option in options) {
+	        enableGiftOptions(options[option]);
+	      };
+	    };
+	  });
+	}
+
+// unlock/lock applicable GiftOptions
+$("input[name='amount']").keyup(function() {
+	checkAmount($(this).val());
+});
+
+
+function deduplicate(data) {
+    if (data.length > 0) {
+        var result = [];
+
+        data.forEach(function (elem) {
+            if (result.indexOf(elem) === -1) {
+                result.push(elem);
+            }
+        });
+
+        return result;
+    }
+}
+
+////////////////////////////////////////////////////////////
+///////////   I hate client-side validation   //////////////
+///////////       but I have a deadline       //////////////
+////////////////////////////////////////////////////////////
+
+function validateForm(){
+	// clear any existing errors
+	$('.attrib_error').remove();
+	
+	// gather list of waived options
+	var waived = [];
+	$('[id^=cb_level_]').each(function (i, obj) {
+		if(obj.checked){
+			waived.push(obj.value);
+		}
+	});
+
+	// gather list of attributes
+	var attribs = [];
+	$('[class^=rb_level_]').each(function (i, obj) {
+		if(!obj.disabled)
+			  attribs.push(obj);
+	});
+	
+  // loop through attributes and build id arrays	
+	var uncheckedAttribs = [];
+	var checkedAttribs = [];
+	for(i=0; i < attribs.length; i++){
+		if(!attribs[i].checked){
+			uncheckedAttribs.push( attribs[i].name.split("_")[2] );
+		} else {
+			checkedAttribs.push( attribs[i].name.split("_")[2] );
+		}
+	}
+	
+	// set the return flag for validation.  If we have all empty attributes for a an unwaived gift option
+	//  build another array of table row ids that we need to message the user
+	var returnFlag = true;
+	var errorIDs = []
+	for(i=0; i < uncheckedAttribs.length; i++){
+		if(!checkedAttribs.includes(uncheckedAttribs[i]) && !waived.includes(uncheckedAttribs[i]) ){
+			errorIDs.push(uncheckedAttribs[i]);
+			returnFlag = false;
+		}
+	}
+
+	// loop throuh existing errors and insert a message to the user
+	if(errorIDs && errorIDs.length > 0){
+		errorIDs = deduplicate(errorIDs);
+		for(i=0; i < errorIDs.length; i++){
+
+			$('<tr class="attrib_error"><td></td><td class="attrib_error">Please select an attribute or to waive the gift</td></tr>').insertAfter('[id^=tr_level_' + errorIDs[i] + ']');
+		}
+		// scroll user to gift option table
+		window.scrollTo({top: document.getElementById('form2').getBoundingClientRect().top + window.pageYOffset, behavior: 'smooth'});
+	}
+
+	// finally return and either continue with POST or allow user to make changes and re-validate
+	return returnFlag;
+};
+
+////////////////////////////////////////////////////////////////
+
+
+
+
+$(document).ready(function(){
+	// repopulate gift options if available
+	  checkAmount($("input[name='amount']").val());
+});
+
 </script>
 {% endblock %}
 <!-- css to correct tag display -->
 <style>
 .ui-helper-hidden-accessible {
-    display: none;
-	visibility: hidden;
+  display: none;
+  visibility: hidden;
 }
 #ui-id-1 {
 	width: 250px;
+}
+.center {
+  text-align: center;
+}
+.optionTable {
+  border-collapse:separate; 
+  border-spacing:0 15px; 
+}
+.disabled {
+  background-color: lightgrey;
+}
+.attrib_error {
+  border-bottom: 1px solid black;
+  background-color: #ffcccc;
 }
 </style>

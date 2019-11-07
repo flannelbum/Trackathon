@@ -23,6 +23,19 @@ def autotag(entry):
             entry.save()
 
 
+def get_unlocked_gifts_for_amount(amount):
+    gift_options = []   
+    for level in GivingLevel.objects.filter(campaign__exact=None):
+        
+        # get the level we're in and add it to the list
+        if amount >= level.low_amount and amount <= level.high_amount and level.gift_option:
+            gift_options.append(level.gift_option.id)
+        # get lower levels we qualify for
+        if amount >= level.high_amount and level.gift_option:
+            gift_options.append(level.gift_option.id)
+    return gift_options
+
+
 def int_or_0(value):
     # Helper function to return an integer for a given value (string)
     #  if none found, return 0
@@ -94,8 +107,8 @@ def generateRandomPledge(date, create_entry):
         }
     entrydict['comment'] = 'Randomly generated comment for ' + entrydict['firstname'] + ' ' + entrydict['lastname'] + ': ' + lorem_ipsum.words(randint(5,75), False)
     
+    # Generate entry            
     if create_entry:
-        # Generate entry            
         entry = Pledge(
             create_date = entrydict['create_date'],
             firstname = entrydict['firstname'],
@@ -113,6 +126,7 @@ def generateRandomPledge(date, create_entry):
             phone_number = entrydict['phone_number'],
             comment = entrydict['comment']
             )
+        
         # tags are special.  Have to have an entry before we can tag it.
         entry.save()
         entry.tags = tags

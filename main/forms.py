@@ -79,7 +79,7 @@ class PledgeEntryForm(forms.Form):
     
     
     city = forms.CharField(
-        required=False,
+        required=True,
         max_length=35,
         widget=TextInput(
             attrs={'autocomplete':'off'}
@@ -91,7 +91,7 @@ class PledgeEntryForm(forms.Form):
   
     
     state = forms.CharField(
-        required=False,
+        required=True,
         max_length=2,
         widget=TextInput(
             attrs={'autocomplete':'off'}
@@ -103,7 +103,7 @@ class PledgeEntryForm(forms.Form):
     
     
     zip = forms.CharField(
-        required=False,
+        required=True,
         max_length=5,
         widget=TextInput(
             attrs={'autocomplete':'off'}

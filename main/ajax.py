@@ -1,13 +1,21 @@
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 
 from main.models import Pledge
-from main.customFunctions import int_or_0
+from main.customFunctions import int_or_0, get_unlocked_gifts_for_amount
 from main.views import decode_entries
 from main.GoalTender import update_goals
 
 
+
+def ajax_get_qualified_gift_options(request):
+    amount = request.GET.get('amount', None)
+    try:
+        gift_optins = get_unlocked_gifts_for_amount(float(amount))
+        return JsonResponse(gift_optins, safe=False)
+    except:
+        return HttpResponse(status=204) 
 
 def ajax_get_next_listDetail(request):
     lid = int_or_0(request.GET.get('lid', None))
@@ -29,7 +37,7 @@ def ajax_get_next_entries(request):
     return render(request, 'main/multiple_pledges.html', { 'entries': entries })
   
  
-#TODO: update applicable goal(s) raised amount(s) by thanked pledge object amount
+
 def ajax_thank_id(request):
     thankedid = int_or_0(request.POST.get('thankedid', None))
     if thankedid > 0:

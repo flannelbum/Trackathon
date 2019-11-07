@@ -12,13 +12,14 @@ from django.shortcuts import render, redirect
 import pytz
 from tagging.models import Tag, TaggedItem
 
-from main.customFunctions import getRandomPledgeForm, int_or_0, autotag
+from main.customFunctions import getRandomPledgeForm, int_or_0, autotag, get_unlocked_gifts_for_amount
 from main.forms import PledgeEntryForm
-from main.models import Pledge, Station, Campaign
+from main.models import Pledge, Station, Campaign, Goal, GivingLevel, GiftAttribute, GiftOption, Gift
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from main.GoalTender import get_goal
+
 
 def login_view(request):
     
@@ -41,8 +42,7 @@ def login_view(request):
 def dashboard(request):
     try:
         context = {}
-#         context['overall_totals_summaryData'] = get_summaryData( "Campaign Overall", Pledge.objects.campaign_active().all(), None )
-        
+            
         # get latest entry
         latestentry = Pledge.objects.campaign_active().all().latest('create_date')
         context['lid'] = latestentry.id
@@ -81,7 +81,7 @@ def dashboard(request):
     
     except:
         return render(request, 'main/index.html', {})
-    
+
     
 def get_entries_in_same_hour_as(entry):
     starttime = datetime.datetime.combine( entry.create_date.date(), datetime.time( entry.create_date.hour, 0, 0, 0, tzinfo=pytz.UTC))
@@ -151,10 +151,27 @@ def TATsettings(request):
         campaign.save()
         Pledge.objects.set_active_campaign_start_date(None)
         Pledge.objects.set_active_campaign_end_date(None)
+        # close open pledges
         for pledge in Pledge.objects.campaign_active():
             pledge.campaign = campaign
             pledge.save()
-        # TODO: Loop through and set campaign for Goal, GivingLevel, GiftAttribute, and GiftOption objects  
+        # close open goals
+        for goal in Goal.objects.filter(campaign__exact=None):
+            goal.campaign = campaign
+            goal.save()
+        # close open giving levels
+        for giving_level in GivingLevel.objects.filter(campaign__exact=None):
+            giving_level.campaign = campaign
+            giving_level.save()
+        # close open gift options
+        for gift_option in GiftOption.objects.filter(campaign__exact=None):
+            gift_option.campaign = campaign
+            gift_option.save()
+        # close gift attributes
+        for gift_attribute in GiftAttribute.objects.filter(campaign__exact=None):
+            gift_attribute.campaign = campaign
+            gift_attribute.save()
+        
         return redirect('/report/?campaignid=' + str(campaign.id))
     
     
@@ -459,6 +476,30 @@ def editPledgeEntry(request):
     
     p = Pledge.objects.get(pk=entryid)
     
+    gifts = Gift.objects.filter(pledge=p)
+    # generate the level list and gather any attributes on a pledge
+    gift_options = {}
+    for level in GivingLevel.objects.all():
+        gift_options[level] = None
+        if level.has_gift_option():
+            if level.gift_option.has_attributes():
+                #find any attributes for the pledge from our gifts above
+                for gift_entry in gifts:
+                    if gift_entry.gift.id == level.gift_option.id:
+                        if gift_entry.gift.has_attributes():
+                            #waived gifts can have a null here
+                            if gift_entry.attribute:
+                                gift_options[level] = gift_entry.attribute.id
+        
+    # handling Gift Options - gather waived gifts 
+    gift_options['waived'] = None
+    options = []
+    for gift_entry in gifts:
+        if gift_entry.waived:
+            options.append(int(gift_entry.gift.id))
+    gift_options['waived'] = options
+    
+        
     if request.method == "POST":
         form = PledgeEntryForm(request.POST or None)
         
@@ -481,6 +522,51 @@ def editPledgeEntry(request):
             p.comment = form.clean_comment()
             p.save()
             form = PledgeEntryForm(None)
+            
+            #clear any Gift entries for this pledge
+            for gift in gifts:
+                gift.delete()
+            
+            # generate the level list and gather any posted attributes
+            for level in GivingLevel.objects.all():
+                gift_options[level] = None
+                if level.gift_option:
+                    if level.gift_option.has_attributes():
+                        posted_attribute = request.POST.get("gift_attribute_" + str(level.gift_option.id), None)
+                        if posted_attribute:
+                            gift_options[level] = int(posted_attribute)
+            
+            gift_options['waived'] = None
+            # handling Gift Options - gather waived gifts and attributes from POST
+            if request.POST.getlist("waived"):
+                waived = []
+                posted_waived = request.POST.getlist("waived")
+                for x in posted_waived:
+                    waived.append(int(x))
+                gift_options['waived'] = waived
+
+            for level,attrib in gift_options.items():
+                gift = None
+                if level != "waived" and level.has_gift_option():
+                    gift_option = level.gift_option
+                    if gift_option.id in get_unlocked_gifts_for_amount(p.amount):
+                        gift = Gift(
+                            pledge = p,
+                            waived = False,
+                            is_fullfilled = False,
+                            gift = gift_option,
+                            attribute = None,
+                            notes = None)
+                    if attrib:
+                        gift.attribute = GiftAttribute.objects.get(pk=attrib)
+                    if gift_options['waived']:
+                        if gift_option.id in gift_options['waived']:
+                            gift.waived = True
+                
+                if gift:
+                    gift.save()
+                
+            
             return HttpResponseRedirect('/pledgeEntry/')
       
     else:
@@ -505,7 +591,14 @@ def editPledgeEntry(request):
         form.fields["tags"].initial = tags
         form.fields["comment"].initial = p.comment
         
-    return render(request, 'main/pledgeEntry.html', { 'form': form, 'entryid': entryid, 'entryObject': p, 'entries': entries })
+        context = {
+            'form': form, 
+            'entryid': entryid, 
+            'entryObject': p, 
+            'entries': entries,
+            'gift_options': gift_options,
+             }
+    return render(request, 'main/pledgeEntry.html', context )
 
 
 
@@ -529,10 +622,35 @@ def bumpPledgeTime(request):
 
 
 def pledgeEntry(request):
-    
+    gift_options = {}
+            
     entries = Pledge.objects.campaign_active().order_by('-id')[:20]  # [::-1]
     
-    form = PledgeEntryForm(request.POST or None)
+    # generate the level list and gather any posted attributes
+    for level in GivingLevel.objects.all():
+        gift_options[level] = None
+        if level.gift_option:
+            if level.gift_option.has_attributes():
+                posted_attribute = request.POST.get("gift_attribute_" + str(level.gift_option.id), None)
+                if posted_attribute:
+                    gift_options[level] = int(posted_attribute)
+
+    
+    # handling Gift Options - gather waived gifts and attributes from POST
+    if request.POST.getlist("waived"):
+        waived = []
+        posted_waived = request.POST.getlist("waived")
+        for x in posted_waived:
+            waived.append(int(x))
+        gift_options['waived'] = waived
+
+    
+    if request.POST:
+        
+        form = PledgeEntryForm(request.POST)
+        
+    else:
+        form = PledgeEntryForm(initial={'state':'OH'})
     
     if form.is_valid():
     
@@ -560,9 +678,30 @@ def pledgeEntry(request):
         # save entry so it has its user-submitted tags before we throw it through autotag which will also save the entry
         entry.save()
         autotag(entry)
+
+        # Apply eligible and waived gifts and their selected attributes.  This has to be done after we save the entry
+   
+        for level,attrib in gift_options.items():
+            gift = None
+            if level != "waived" and level.has_gift_option():
+                gift_option = level.gift_option
+                if gift_option.id in get_unlocked_gifts_for_amount(entry.amount):
+                    gift = Gift(
+                        pledge = entry,
+                        waived = False,
+                        is_fullfilled = False,
+                        gift = gift_option,
+                        attribute = None,
+                        notes = None)
+                if attrib:
+                    gift.attribute = GiftAttribute.objects.get(pk=attrib)
+                if gift_options['waived']:
+                    if gift_option.id in gift_options['waived']:
+                        gift.waived = True
+            
+            if gift:
+                gift.save()
         
-        form = PledgeEntryForm(None)
-        form.fields["state"].initial = "OH"
 
         return HttpResponseRedirect('/pledgeEntry/')
             
@@ -584,5 +723,26 @@ def pledgeEntry(request):
         form.fields["phone_number"].initial = myform.phone_number
         form.fields["tags"].initial = myform.tags
         form.fields["comment"].initial = myform.comment
+        
+    giving_level = GivingLevel.objects.all().filter(campaign_id__exact=None)
+    
+    context = {
+        'form': form,
+        'entries': entries,
+        'giving_level': giving_level,
+        }
+    
+    if gift_options:
+        context['gift_options'] = gift_options
+        
+    return render(request, 'main/pledgeEntry.html', context)
 
-    return render(request, 'main/pledgeEntry.html', { 'form': form, 'entries': entries })
+
+
+
+
+
+
+
+
+
