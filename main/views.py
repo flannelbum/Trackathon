@@ -516,7 +516,7 @@ def editPledgeEntry(request):
             p.is_anonymous = form.cleaned_data['is_anonymous']
             p.is_first_time_donor = form.cleaned_data['is_first_time_donor']
             p.is_monthly = form.cleaned_data['is_monthly']
-            p.station = form.cleaned_data['station']
+#             p.station = form.cleaned_data['station']
             p.phone_number = form.cleaned_data['phone_number']
             p.tags = form.clean_tags()
             p.comment = form.clean_comment()
@@ -586,7 +586,7 @@ def editPledgeEntry(request):
         form.fields["is_anonymous"].initial = p.is_anonymous
         form.fields["is_monthly"].initial = p.is_monthly
         form.fields["is_first_time_donor"].initial = p.is_first_time_donor
-        form.fields["station"].initial = p.station
+#         form.fields["station"].initial = p.station
         form.fields["phone_number"].initial = p.phone_number
         form.fields["tags"].initial = tags
         form.fields["comment"].initial = p.comment
@@ -666,7 +666,7 @@ def pledgeEntry(request):
             is_anonymous = form.cleaned_data['is_anonymous'],
             is_first_time_donor=form.cleaned_data['is_first_time_donor'],
             is_monthly=form.cleaned_data['is_monthly'],
-            station=form.cleaned_data['station'],
+#             station=form.cleaned_data['station'],
             phone_number=form.cleaned_data['phone_number'],
             comment=form.clean_comment(),
             )
@@ -680,7 +680,7 @@ def pledgeEntry(request):
         autotag(entry)
 
         # Apply eligible and waived gifts and their selected attributes.  This has to be done after we save the entry
-   
+        gift_options['waived'] = None
         for level,attrib in gift_options.items():
             gift = None
             if level != "waived" and level.has_gift_option():
@@ -719,7 +719,7 @@ def pledgeEntry(request):
         form.fields["is_anonymous"].initial = myform.is_anonymous
         form.fields["is_first_time_donor"].initial = myform.is_first_time_donor
         form.fields["is_monthly"].initial = myform.is_monthly
-        form.fields["station"].initial = myform.station
+#         form.fields["station"].initial = myform.station
         form.fields["phone_number"].initial = myform.phone_number
         form.fields["tags"].initial = myform.tags
         form.fields["comment"].initial = myform.comment

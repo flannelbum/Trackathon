@@ -3,32 +3,19 @@ from django.forms.widgets import TextInput, CheckboxInput
 from tagging.forms import TagField
 from tagging_autocomplete.widgets import TagAutocomplete
 
-from main.models import Station
+# from main.models import Station
 
 #TODO: Add Waive Gift widget/handling.  Re-order form where nessesary
 class PledgeEntryForm(forms.Form):
     
+        
     
-    amount = forms.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        label='Amount',
-    )
-    
-    is_anonymous = forms.BooleanField(
+    is_first_time_donor = forms.BooleanField(
         required=False,
         widget=CheckboxInput(),
-        label='Anonymous Pledge',
+        label='First Time Donor',
     )
-    
-    phone_number = forms.CharField(
-        required=True,
-        max_length=13,
-        widget=TextInput(
-            attrs={'autocomplete':'off'}
-        ),
-    )
-    
+
     
     firstname = forms.CharField(
         required=True,
@@ -53,6 +40,27 @@ class PledgeEntryForm(forms.Form):
     def clean_lastname(self):
         return self.cleaned_data['lastname'].upper()
     
+    
+    is_anonymous = forms.BooleanField(
+        required=False,
+        widget=CheckboxInput(),
+        label='Anonymous Pledge',
+    )
+
+    
+    is_monthly = forms.BooleanField(
+        required=False,
+        widget=CheckboxInput(),
+        label="Monthly Donation",        
+    )
+
+
+    amount = forms.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        label='Amount',
+    )
+
     
     address1 = forms.CharField(
         required=True,
@@ -112,24 +120,20 @@ class PledgeEntryForm(forms.Form):
     )
         
     
-    is_first_time_donor = forms.BooleanField(
-        required=False,
-        widget=CheckboxInput(),
-        label='First Time Donor',
+    phone_number = forms.CharField(
+        required=True,
+        max_length=13,
+        widget=TextInput(
+            attrs={'autocomplete':'off'}
+        ),
     )
     
-    
-    is_monthly = forms.BooleanField(
-        required=False,
-        widget=CheckboxInput(),
-        label="Monthly Donation",        
-    )
 
 
-    station = forms.ModelChoiceField(
-        required=False,
-        queryset=Station.objects.all() 
-    )
+#     station = forms.ModelChoiceField(
+#         required=False,
+#         queryset=Station.objects.all() 
+#     )
    
     
     tags = TagField( 
