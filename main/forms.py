@@ -8,7 +8,7 @@ from tagging_autocomplete.widgets import TagAutocomplete
 #TODO: Add Waive Gift widget/handling.  Re-order form where nessesary
 class PledgeEntryForm(forms.Form):
     
-        
+    required_flag = False
     
     is_first_time_donor = forms.BooleanField(
         required=False,
@@ -30,7 +30,7 @@ class PledgeEntryForm(forms.Form):
 
 
     lastname = forms.CharField(
-        required=True,
+        required=required_flag,
         max_length=35,
         widget=TextInput(
             attrs={'autocomplete':'off'}
@@ -63,7 +63,7 @@ class PledgeEntryForm(forms.Form):
 
     
     address1 = forms.CharField(
-        required=True,
+        required=required_flag,
         max_length=100,
         widget=TextInput(
             attrs={'autocomplete':'off'}
@@ -87,7 +87,7 @@ class PledgeEntryForm(forms.Form):
     
     
     city = forms.CharField(
-        required=True,
+        required=required_flag,
         max_length=35,
         widget=TextInput(
             attrs={'autocomplete':'off'}
@@ -99,7 +99,7 @@ class PledgeEntryForm(forms.Form):
   
     
     state = forms.CharField(
-        required=True,
+        required=required_flag,
         max_length=2,
         widget=TextInput(
             attrs={'autocomplete':'off'}
@@ -111,7 +111,7 @@ class PledgeEntryForm(forms.Form):
     
     
     zip = forms.CharField(
-        required=True,
+        required=required_flag,
         max_length=5,
         widget=TextInput(
             attrs={'autocomplete':'off'}
@@ -121,7 +121,7 @@ class PledgeEntryForm(forms.Form):
         
     
     phone_number = forms.CharField(
-        required=True,
+        required=required_flag,
         max_length=13,
         widget=TextInput(
             attrs={'autocomplete':'off'}

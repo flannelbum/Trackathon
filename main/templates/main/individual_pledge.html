@@ -39,7 +39,9 @@
 				{% endif %}
 			</div>
 			<div><strong>Phone:</strong> {{ entry.phone_number }}</div>
+			{% if entry.station.callsign %}
 			<div><strong>Station:</strong> {{ entry.station.callsign }} - {{ entry.station.name }}</div>
+			{% endif %}
 			<div><strong>City:</strong> {{ entry.city }}</div>
 			<div><strong>Tags:</strong> {{ tags }}</div>
 			<div><strong>Comment:</strong> {{ entry.comment }}</div>
